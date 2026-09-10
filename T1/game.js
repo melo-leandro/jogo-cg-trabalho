@@ -26,6 +26,13 @@ camera.position.set(-5, 2, -5);
 camera.lookAt(new THREE.Vector3(0, 2, 0));
 scene.add(camera);
 
+// CÓDIGO PARA SALVAR E RESTAURAR A POSIÇÃO DA CÂMERA NO RELOAD DO SITE
+restoreCamera(camera);
+window.addEventListener("pagehide", function () {
+  saveCamera(camera);
+});
+
+
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 
