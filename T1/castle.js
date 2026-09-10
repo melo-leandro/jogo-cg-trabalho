@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {setDefaultMaterial} from "./libs/util/util.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial();
+let material = setDefaultMaterial("darkblue");
 
 // TORRES
 
@@ -27,11 +27,15 @@ castelo.add(towerSE);
 // MURO
 
 // -> FRENTE E TRÁS
-let frontWallsGeometry = new THREE.BoxGeometry(2, 12, 32);
+let frontWallsGeometry = new THREE.BoxGeometry(2, 12, 16);
 
-let southWall = new THREE.Mesh(frontWallsGeometry, material);
-southWall.position.set(72, 6, 0)
-castelo.add(southWall);
+let southEastWall = new THREE.Mesh(frontWallsGeometry, material);
+southEastWall.position.set(72, 6, 10)
+castelo.add(southEastWall);
+
+let southWestWall = new THREE.Mesh(frontWallsGeometry, material);
+southWestWall.position.set(72, 6, -10)
+castelo.add(southWestWall);
 
 
 let northWall = new THREE.Mesh(frontWallsGeometry, material);
@@ -72,9 +76,9 @@ castelo.add(westFrontTowerSquare);
 
 // TORRE DA ENTRADA
 
-let entranceTowerGeometry = new THREE.BoxGeometry(8, 18, 5);
+let entranceTowerGeometry = new THREE.BoxGeometry(8, 13, 5);
 let entranceTower = new THREE.Mesh(entranceTowerGeometry, material);
-entranceTower.position.set(75, 9, 0)
+entranceTower.position.set(75, 11.5, 0)
 castelo.add(entranceTower);
 
 // multiplica a escala de todo o castelo por . coloquei isso pq na altura normal
