@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {setDefaultMaterial} from "./libs/util/util.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial();
+let material = setDefaultMaterial('#796D62');
 
 // TORRES
 
@@ -38,16 +38,37 @@ let northWall = new THREE.Mesh(frontWallsGeometry, material);
 northWall.position.set(119, 6, 0)
 castelo.add(northWall);
 
-// -> LADOS
-let sideWallsGeometry = new THREE.BoxGeometry(40, 12, 2);
+// -> LADO DIREITO
+let eastWallsGeometry = new THREE.BoxGeometry(40, 12, 2);
 
-let westWall = new THREE.Mesh(sideWallsGeometry, material);
-westWall.position.set(95.5, 6, -20)
-castelo.add(westWall);
-
-let eastWall = new THREE.Mesh(sideWallsGeometry, material);
+let eastWall = new THREE.Mesh(eastWallsGeometry, material);
 eastWall.position.set(95.5, 6, 20)
 castelo.add(eastWall);
+
+// -> LADO ESQUERDO (considerando curva em L) 6, 10, 24
+let westWalls = new THREE.Group();
+let firstWestWallGeometry = new THREE.BoxGeometry(4, 12, 2);
+let firstwestWall = new THREE.Mesh(firstWestWallGeometry, material);
+firstwestWall.position.set(78, 6, -20)
+westWalls.add(firstwestWall);
+
+let secondWestWallGeometry = new THREE.BoxGeometry(4, 12, 2);
+let secondWestWall = new THREE.Mesh(secondWestWallGeometry, material);
+secondWestWall.position.set(81, 6, -21);
+secondWestWall.rotation.y = Math.PI/2;
+westWalls.add(secondWestWall);
+
+let thirdWestWallGeometry = new THREE.BoxGeometry(10, 12, 2);
+let thirdWestWall = new THREE.Mesh(thirdWestWallGeometry, material);
+thirdWestWall.position.set(86, 6, -22);
+westWalls.add(thirdWestWall);
+
+let fourthWestWallGeometry = new THREE.BoxGeometry(24, 12, 2);
+let fourthWestWall = new THREE.Mesh(fourthWestWallGeometry, material);
+fourthWestWall.position.set(104, 6, -20);
+westWalls.add(fourthWestWall);
+
+castelo.add(westWalls);
 
 // TORRES FRONTAIS
 
@@ -77,8 +98,22 @@ let entranceTower = new THREE.Mesh(entranceTowerGeometry, material);
 entranceTower.position.set(75, 9, 0)
 castelo.add(entranceTower);
 
-// multiplica a escala de todo o castelo por . coloquei isso pq na altura normal
-// o castelo ficava meio pequeno. tira esse comentário dps
+//TORRE LATERAIS E TRASEIRA
+let middleTowersGeometry = new THREE.BoxGeometry(8, 18, 5);
+let middleTowerLeft = new THREE.Mesh(middleTowersGeometry, material);
+middleTowerLeft.position.set(95, 9, -21.5);
+castelo.add(middleTowerLeft);
+
+let middleTowerRight = new THREE.Mesh(middleTowersGeometry, material);
+middleTowerRight.position.set(95, 9, 21.5);
+castelo.add(middleTowerRight);
+
+let middleTowerBack = new THREE.Mesh(middleTowersGeometry, material);
+middleTowerBack.position.set(120.5, 9, 0);
+middleTowerBack.rotation.y = Math.PI/2;
+castelo.add(middleTowerBack);
+
+
 castelo.scale.setScalar(2);
 
 export { castelo };
