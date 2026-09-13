@@ -93,9 +93,9 @@ castelo.add(westFrontTowerSquare);
 
 // TORRE DA ENTRADA
 
-let entranceTowerGeometry = new THREE.BoxGeometry(8, 18, 5);
+let entranceTowerGeometry = new THREE.BoxGeometry(7, 18, 5);
 let entranceTower = new THREE.Mesh(entranceTowerGeometry, material);
-entranceTower.position.set(75, 9, 0)
+entranceTower.position.set(73, 9, 0)
 castelo.add(entranceTower);
 
 //TORRE LATERAIS E TRASEIRA
@@ -138,7 +138,7 @@ castelo.add(smallTower4);
 
 //FrontTower
 let smallTower5 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower5.position.set(74, 10, -3);
+smallTower5.position.set(75.5, 10, -2.5);
 castelo.add(smallTower5);
 
 
