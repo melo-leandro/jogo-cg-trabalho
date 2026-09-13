@@ -113,6 +113,49 @@ middleTowerBack.position.set(120.5, 9, 0);
 middleTowerBack.rotation.y = Math.PI/2;
 castelo.add(middleTowerBack);
 
+// TORRES PEQUENAS ADJACENTES
+let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
+
+//CenterWestTower
+let smallTower1 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower1.position.set(99, 10, -20);
+castelo.add(smallTower1);
+
+//CenterEastTower
+let smallTower2 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower2.position.set(99, 10, 20);
+castelo.add(smallTower2);
+
+//CylinderNWTower
+let smallTower3 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower3.position.set(77, 10, -20);
+castelo.add(smallTower3);
+
+//CylinderNETower
+let smallTower4 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower4.position.set(72, 10, 15.5);     
+castelo.add(smallTower4);
+
+//FrontTower
+let smallTower5 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower5.position.set(74, 10, -3);
+castelo.add(smallTower5);
+
+
+//CylinderSWTower
+let smallTower6 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower6.position.set(119, 10, -16);
+castelo.add(smallTower6);
+
+//CylinderSETower
+let smallTower7 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower7.position.set(119, 10, 15);
+castelo.add(smallTower7);
+
+//BackTower
+let smallTower8 = new THREE.Mesh(smallTowersGeometry, material);
+smallTower8.position.set(119, 10, 4);
+castelo.add(smallTower8);
 
 castelo.scale.setScalar(2);
 
