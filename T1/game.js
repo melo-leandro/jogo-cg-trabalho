@@ -10,6 +10,7 @@ import { initRenderer,
         createGroundPlaneXZ } from "./libs/util/util.js";
 import { castelo } from "./castle.js";
 import { restoreCamera, saveCamera } from "./cameraStorage.js";
+import { toggleOrbit, isInOrbitMode, updateOrbit } from "./orbitCamera.js";
 
 let scene, renderer, camera, light, flyingCamera;
 
@@ -54,7 +55,9 @@ camera.addEventListener("change", function() {
 const controls = new PointerLockControls(camera, renderer.domElement);
 
 renderer.domElement.addEventListener("click", function () {
-  controls.lock(true);
+    if (!isInOrbitMode()) {
+        controls.lock(true);
+    }
 });
 
 const keys = new Set();
@@ -69,6 +72,14 @@ window.addEventListener("keyup", function (event) {
 
 controls.addEventListener("unlock", function () {
   keys.clear();
+});
+
+window.addEventListener("keydown", function (event) {
+  if (event.code === "KeyC") {
+    toggleOrbit(camera, renderer, controls);
+    return;
+  }
+  keys.add(event.code);
 });
 
 function movePlayer(delta) {
@@ -89,10 +100,12 @@ function render()
   clock.update();
   //Limita saltos de movimento causados por pausas entre frames
   const delta = Math.min(clock.getDelta(), 0.05);
-  if (controls.isLocked) {
+
+  if (isInOrbitMode()) {
+    updateOrbit();
+  } else if (controls.isLocked) {
     movePlayer(delta);
   }
-
   requestAnimationFrame(render);
   renderer.render(scene, camera) // Render scene
 }
