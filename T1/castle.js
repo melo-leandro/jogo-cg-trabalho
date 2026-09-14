@@ -24,6 +24,24 @@ let towerSE = new THREE.Mesh(towerGeometry, material);
 towerSE.position.set(72.0, 9.0, 20.0);
 castelo.add(towerSE);
 
+//COROAS DAS TORRES CILINDRICAS
+let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true);
+let crownNW = new THREE.Mesh(crownGeometry, material);
+crownNW.position.set(119.0, 18.5, -20.0);
+castelo.add(crownNW);
+
+let crownSW = new THREE.Mesh(crownGeometry, material);
+crownSW.position.set(72.0, 18.5, -20.0);
+castelo.add(crownSW);
+
+let crownNE = new THREE.Mesh(crownGeometry, material);
+crownNE.position.set(119.0, 18.5, 20.0);
+castelo.add(crownNE);
+
+let crownSE = new THREE.Mesh(crownGeometry, material);
+crownSE.position.set(72.0, 18.5, 20.0);
+castelo.add(crownSE);
+
 // MURO
 
 // -> FRENTE E TRÁS
@@ -45,7 +63,7 @@ let eastWall = new THREE.Mesh(eastWallsGeometry, material);
 eastWall.position.set(95.5, 6, 20)
 castelo.add(eastWall);
 
-// -> LADO ESQUERDO (considerando curva em L) 6, 10, 24
+// -> LADO ESQUERDO (considerando curva em L) 
 let westWalls = new THREE.Group();
 let firstWestWallGeometry = new THREE.BoxGeometry(4, 12, 2);
 let firstwestWall = new THREE.Mesh(firstWestWallGeometry, material);
@@ -113,49 +131,85 @@ middleTowerBack.position.set(120.5, 9, 0);
 middleTowerBack.rotation.y = Math.PI/2;
 castelo.add(middleTowerBack);
 
+//COROAS DAS TORRES LATERAIS E TRASEIRA
+
+
 // TORRES PEQUENAS ADJACENTES
 let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
 
-//CenterWestTower
+//-> TorreCentralOeste
 let smallTower1 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower1.position.set(99, 10, -20);
 castelo.add(smallTower1);
 
-//CenterEastTower
+//-> TorreCentralLeste
 let smallTower2 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower2.position.set(99, 10, 20);
 castelo.add(smallTower2);
 
-//CylinderNWTower
+//-> TorreCilindricaSO
 let smallTower3 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower3.position.set(77, 10, -20);
 castelo.add(smallTower3);
 
-//CylinderNETower
+//-> TorreCilindricaSE
 let smallTower4 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower4.position.set(72, 10, 15.5);     
 castelo.add(smallTower4);
 
-//FrontTower
+//-> TorreFrontal
 let smallTower5 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower5.position.set(75.5, 10, -2.5);
 castelo.add(smallTower5);
 
-
-//CylinderSWTower
+//-> TorreCilindricaNO
 let smallTower6 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower6.position.set(119, 10, -16);
 castelo.add(smallTower6);
 
-//CylinderSETower
+//-> TorreCilindricaNE
 let smallTower7 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower7.position.set(119, 10, 15);
 castelo.add(smallTower7);
 
-//BackTower
+//-> TorreTraseira
 let smallTower8 = new THREE.Mesh(smallTowersGeometry, material);
 smallTower8.position.set(119, 10, 4);
 castelo.add(smallTower8);
+
+//COROAS DAS TORRES PEQUENAS ADJACENTES
+let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true);
+let smallCrown1 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown1.position.set(99, 20.5, -20);
+castelo.add(smallCrown1);
+
+let smallCrown2 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown2.position.set(99, 20.5, 20);
+castelo.add(smallCrown2);
+
+let smallCrown3 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown3.position.set(77, 20.5, -20);
+castelo.add(smallCrown3);
+
+let smallCrown4 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown4.position.set(72, 20.5, 15.5);
+castelo.add(smallCrown4);
+
+let smallCrown5 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown5.position.set(75.5, 20.5, -2.5);
+castelo.add(smallCrown5);
+
+let smallCrown6 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown6.position.set(119, 20.5, -16);
+castelo.add(smallCrown6);
+
+let smallCrown7 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown7.position.set(119, 20.5, 15);
+castelo.add(smallCrown7);
+
+let smallCrown8 = new THREE.Mesh(smallCrownGeometry, material);
+smallCrown8.position.set(119, 20.5, 4);
+castelo.add(smallCrown8);
 
 castelo.scale.setScalar(2);
 
