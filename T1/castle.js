@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {setDefaultMaterial} from "./libs/util/util.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial('#796D62');
+let material = setDefaultMaterial('#82796A');
 
 // TORRES
 
@@ -26,21 +26,17 @@ castelo.add(towerSE);
 
 //COROAS DAS TORRES CILINDRICAS
 let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true);
-let crownNW = new THREE.Mesh(crownGeometry, material);
-crownNW.position.set(119.0, 18.5, -20.0);
-castelo.add(crownNW);
 
-let crownSW = new THREE.Mesh(crownGeometry, material);
-crownSW.position.set(72.0, 18.5, -20.0);
-castelo.add(crownSW);
+function createCrown(x, z) {
+    let crown = new THREE.Mesh(crownGeometry, material);
+    crown.position.set(x, 18.5, z);
+    castelo.add(crown);
+}
 
-let crownNE = new THREE.Mesh(crownGeometry, material);
-crownNE.position.set(119.0, 18.5, 20.0);
-castelo.add(crownNE);
-
-let crownSE = new THREE.Mesh(crownGeometry, material);
-crownSE.position.set(72.0, 18.5, 20.0);
-castelo.add(crownSE);
+createCrown(119.0, -20.0); // NW
+createCrown(119.0, 20.0);  // NE
+createCrown(72.0, -20.0);  // SW
+createCrown(72.0, 20.0);   // SE
 
 // MURO
 
@@ -118,98 +114,60 @@ castelo.add(entranceTower);
 
 //TORRE LATERAIS E TRASEIRA
 let middleTowersGeometry = new THREE.BoxGeometry(8, 18, 5);
-let middleTowerLeft = new THREE.Mesh(middleTowersGeometry, material);
-middleTowerLeft.position.set(95, 9, -21.5);
-castelo.add(middleTowerLeft);
 
-let middleTowerRight = new THREE.Mesh(middleTowersGeometry, material);
-middleTowerRight.position.set(95, 9, 21.5);
-castelo.add(middleTowerRight);
+function createMiddleTower(x, z, rotation = 0) {
+    let middleTower = new THREE.Mesh(middleTowersGeometry, material);
+    middleTower.position.set(x, 9, z);
+    rotation = THREE.MathUtils.degToRad(rotation);
+    middleTower.rotation.y = rotation;
+    castelo.add(middleTower);
+}
+
+createMiddleTower(95, -21.5); // Oeste
+createMiddleTower(95, 21.5); // Leste
+createMiddleTower(120.5, 0, 90); // Traseira
+
 
 let middleTowerBack = new THREE.Mesh(middleTowersGeometry, material);
 middleTowerBack.position.set(120.5, 9, 0);
 middleTowerBack.rotation.y = Math.PI/2;
 castelo.add(middleTowerBack);
 
-//COROAS DAS TORRES LATERAIS E TRASEIRA
-
-
 // TORRES PEQUENAS ADJACENTES
 let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
 
-//-> TorreCentralOeste
-let smallTower1 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower1.position.set(99, 10, -20);
-castelo.add(smallTower1);
+function createSmallTower(x, z) {
+    let smallTower = new THREE.Mesh(smallTowersGeometry, material);
+    smallTower.position.set(x, 10, z);
+    castelo.add(smallTower);
+}
 
-//-> TorreCentralLeste
-let smallTower2 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower2.position.set(99, 10, 20);
-castelo.add(smallTower2);
-
-//-> TorreCilindricaSO
-let smallTower3 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower3.position.set(77, 10, -20);
-castelo.add(smallTower3);
-
-//-> TorreCilindricaSE
-let smallTower4 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower4.position.set(72, 10, 15.5);     
-castelo.add(smallTower4);
-
-//-> TorreFrontal
-let smallTower5 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower5.position.set(75.5, 10, -2.5);
-castelo.add(smallTower5);
-
-//-> TorreCilindricaNO
-let smallTower6 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower6.position.set(119, 10, -16);
-castelo.add(smallTower6);
-
-//-> TorreCilindricaNE
-let smallTower7 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower7.position.set(119, 10, 15);
-castelo.add(smallTower7);
-
-//-> TorreTraseira
-let smallTower8 = new THREE.Mesh(smallTowersGeometry, material);
-smallTower8.position.set(119, 10, 4);
-castelo.add(smallTower8);
+createSmallTower(99, -20); // TorreCentralOeste
+createSmallTower(99, 20);  // TorreCentralLeste
+createSmallTower(77, -20); // TorreCilindricaSO
+createSmallTower(72, 15.5); // TorreCilindricaSE
+createSmallTower(75.5, -2.5);// TorreFrontal
+createSmallTower(119, -16); // TorreCilindricaNO
+createSmallTower(119, 15); // TorreCilindricaNE
+createSmallTower(119, 4); // TorreTraseira
 
 //COROAS DAS TORRES PEQUENAS ADJACENTES
 let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true);
-let smallCrown1 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown1.position.set(99, 20.5, -20);
-castelo.add(smallCrown1);
 
-let smallCrown2 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown2.position.set(99, 20.5, 20);
-castelo.add(smallCrown2);
+function createSmallCrown(x, z) {
+    let smallCrown = new THREE.Mesh(smallCrownGeometry, material);
+    smallCrown.position.set(x, 20.2, z);
+    castelo.add(smallCrown);
+}
 
-let smallCrown3 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown3.position.set(77, 20.5, -20);
-castelo.add(smallCrown3);
-
-let smallCrown4 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown4.position.set(72, 20.5, 15.5);
-castelo.add(smallCrown4);
-
-let smallCrown5 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown5.position.set(75.5, 20.5, -2.5);
-castelo.add(smallCrown5);
-
-let smallCrown6 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown6.position.set(119, 20.5, -16);
-castelo.add(smallCrown6);
-
-let smallCrown7 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown7.position.set(119, 20.5, 15);
-castelo.add(smallCrown7);
-
-let smallCrown8 = new THREE.Mesh(smallCrownGeometry, material);
-smallCrown8.position.set(119, 20.5, 4);
-castelo.add(smallCrown8);
+createSmallCrown(99, -20); // 1
+createSmallCrown(99, 20);  // 2
+createSmallCrown(77, -20); // 3
+createSmallCrown(72, 15.5); // 4
+createSmallCrown(75.5, -2.5); // 5
+createSmallCrown(119, -16); // 6
+createSmallCrown(119, 15); // 7
+createSmallCrown(119, 4); // 8
 
 castelo.scale.setScalar(2);
 
