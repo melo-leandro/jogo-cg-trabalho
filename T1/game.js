@@ -85,10 +85,10 @@ window.addEventListener("keydown", function (event) {
 function movePlayer(delta) {
   const distance = 20 * delta;
 
-  if (keys.has("KeyW")) controls.moveForward(distance);
-  if (keys.has("KeyS")) controls.moveForward(-distance);
-  if (keys.has("KeyD")) controls.moveRight(distance);
-  if (keys.has("KeyA")) controls.moveRight(-distance);
+  if (keys.has("KeyW") || keys.has("ArrowUp")) controls.moveForward(distance);
+  if (keys.has("KeyS") || keys.has("ArrowDown")) controls.moveForward(-distance);
+  if (keys.has("KeyD") || keys.has("ArrowRight")) controls.moveRight(distance);
+  if (keys.has("KeyA") || keys.has("ArrowLeft")) controls.moveRight(-distance);
   if (keys.has("KeyE")) camera.position.y += distance;
   if (keys.has("KeyQ")) camera.position.y -= distance;
 }
