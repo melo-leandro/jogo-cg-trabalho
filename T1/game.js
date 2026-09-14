@@ -11,8 +11,11 @@ import { initRenderer,
 import { castelo } from "./castle.js";
 import { restoreCamera, saveCamera } from "./cameraStorage.js";
 import { toggleOrbit, isInOrbitMode, updateOrbit } from "./orbitCamera.js";
+import { createCrosshair } from "./crosshair.js";
 
 let scene, renderer, camera, light, flyingCamera;
+
+createCrosshair();
 
 scene = new THREE.Scene();
 const clock = new THREE.Timer();
