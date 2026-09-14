@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from "./build/jsm/controls/OrbitControls.js";
 
 let isOrbiting = false;
-let orbitControls = null; // vamos criar só na primeira vez que for usado
+let orbitControls = null;
 let savedPosition = new THREE.Vector3();
 let savedQuaternion = new THREE.Quaternion();
 
@@ -29,8 +29,8 @@ export function toggleOrbit (camera, renderer, fpsControls){
         orbitControls.enabled = true;
         orbitControls.update();
     } else {
-        orbitControls.dispose();  // remove os listeners do canvas
-        orbitControls = null;     // força criar uma instância nova na próxima vez
+        orbitControls.dispose(); 
+        orbitControls = null;
 
         camera.position.copy(savedPosition);
         camera.quaternion.copy(savedQuaternion);

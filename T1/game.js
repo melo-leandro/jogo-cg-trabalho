@@ -74,12 +74,29 @@ controls.addEventListener("unlock", function () {
   keys.clear();
 });
 
+const infoBox = new InfoBox();
+
 window.addEventListener("keydown", function (event) {
   if (event.code === "KeyC") {
+
     toggleOrbit(camera, renderer, controls);
+
+    infoBox.infoBox.innerHTML = "";
+
+    if (isInOrbitMode()) {
+        infoBox.add("Câmera orbital");
+    } else {
+        infoBox.add("Câmera primeira pessoa");
+    }
+
+    infoBox.show();
+
+    setTimeout(function () {
+        infoBox.infoBox.remove();
+    }, 2000);
+
     return;
-  }
-  keys.add(event.code);
+}
 });
 
 function movePlayer(delta) {
