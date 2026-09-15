@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {setDefaultMaterial} from "./libs/util/util.js";
+import {degreesToRadians, setDefaultMaterial} from "./libs/util/util.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("gray");
@@ -26,12 +26,24 @@ towerSE.position.set(72.0, 9.0, 20.0);
 castelo.add(towerSE);
 
 //COROAS DAS TORRES CILINDRICAS
-let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true);
+let crownBaseGeometry = new THREE.CircleGeometry(5, 256);
+
 
 function createCrown(x, z) {
-    let crown = new THREE.Mesh(crownGeometry, material);
-    crown.position.set(x, 18.5, z);
-    castelo.add(crown);
+    let crownBase = new THREE.Mesh(crownBaseGeometry, material);
+
+    crownBase.position.set(x, 18, z);
+    crownBase.rotation.x = degreesToRadians(-90);
+    castelo.add(crownBase);
+
+    //secciona o topo da
+    for(let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 4) {
+        // aqui o último número diminui a circunferencia do cilindro (theta)
+        let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true, thetaStart, 0.5);
+        let crown = new THREE.Mesh(crownGeometry, material);
+        crown.position.set(x, 18.9, z);
+        castelo.add(crown);
+    }
 }
 
 createCrown(119.0, -20.0); // NW
@@ -170,12 +182,21 @@ createSmallTower(119, 15); // TorreCilindricaNE
 createSmallTower(119, 4); // TorreTraseira
 
 //COROAS DAS TORRES PEQUENAS ADJACENTES
-let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true);
+let smallCrownBaseGeometry = new THREE.CircleGeometry(1.2, 256);
 
 function createSmallCrown(x, z) {
-    let smallCrown = new THREE.Mesh(smallCrownGeometry, material);
-    smallCrown.position.set(x, 20.2, z);
-    castelo.add(smallCrown);
+    let smallCrownBase = new THREE.Mesh(smallCrownBaseGeometry, material);
+    smallCrownBase.position.set(x, 20, z);
+    smallCrownBase.rotation.x = degreesToRadians(-90);
+    castelo.add(smallCrownBase);
+
+
+    for (let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 2) {
+        let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true, thetaStart, 1);
+        let smallCrown = new THREE.Mesh(smallCrownGeometry, material);
+        smallCrown.position.set(x, 20.5, z);
+        castelo.add(smallCrown);
+    }
 }
 
 createSmallCrown(99, -20); // 1
