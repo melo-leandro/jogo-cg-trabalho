@@ -80,7 +80,15 @@ function movePlayer(delta) {
   if (keys.has("KeyA")) controls.moveRight(-distance);
   if (keys.has("KeyE")) camera.position.y += distance;
   if (keys.has("KeyQ")) camera.position.y -= distance;
+  // shiftzin pra acelerar a vida
+  if (keys.has("ShiftLeft") && keys.has("KeyW")) controls.moveForward(distance * 4);
+  if (keys.has("ShiftLeft") && keys.has("KeyS"))  controls.moveForward(-distance * 4);
+  if (keys.has("ShiftLeft") && keys.has("KeyD")) controls.moveRight(distance * 4);
+  if (keys.has("ShiftLeft") && keys.has("KeyA")) controls.moveRight(-distance * 4);
+  if (keys.has("ShiftLeft") && keys.has("KeyE")) camera.position.y += distance * 4;
+  if (keys.has("ShiftLeft") && keys.has("KeyQ")) camera.position.y -= distance * 4;
 }
+
 
 scene.add(castelo);
 render();
