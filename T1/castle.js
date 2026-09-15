@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import {setDefaultMaterial} from "./libs/util/util.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial("beige");
+let material = setDefaultMaterial("gray");
+material.side = THREE.DoubleSide;
 
 // TORRES
 
