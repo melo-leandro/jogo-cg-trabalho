@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import {degreesToRadians, setDefaultMaterial} from "./libs/util/util.js";
+import { smallHouse } from './smallHouse.js';
+import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("gray");
@@ -208,6 +209,6 @@ createSmallCrown(119, -16); // 6
 createSmallCrown(119, 15); // 7
 createSmallCrown(119, 4); // 8
 
-castelo.scale.setScalar(2);
+castelo.scale.setScalar(3);
 
 export { castelo };
