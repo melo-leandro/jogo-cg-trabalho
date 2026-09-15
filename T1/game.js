@@ -8,7 +8,8 @@ import { initRenderer,
         SecondaryBox,
         onWindowResize,
         createGroundPlaneXZ } from "./libs/util/util.js";
-import { castelo } from "./castle.js";
+import { smallHouse } from "./models/smallHouse.js";
+import { castelo } from "./models/castle.js";
 import { restoreCamera, saveCamera } from "./cameraStorage.js";
 
 let scene, renderer, camera, light, flyingCamera;
@@ -91,6 +92,7 @@ function movePlayer(delta) {
 
 
 scene.add(castelo);
+scene.add(smallHouse);
 render();
 function render()
 {
