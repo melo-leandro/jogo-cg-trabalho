@@ -14,6 +14,7 @@ import { restoreCamera, saveCamera } from "./cameraStorage.js";
 import { toggleOrbit, isInOrbitMode, updateOrbit } from "./orbitCamera.js";
 import { createCrosshair } from "./crosshair.js";
 import { criarArma } from "./models/arma.js";
+import { atirar, atualizarProjeteis } from "./tiro.js";
 
 let scene, renderer, camera, light, flyingCamera;
 
@@ -38,7 +39,7 @@ window.addEventListener("pagehide", function () {
   saveCamera(camera);
 });
 
-const arma = criarArma(camera);
+const {arma,ponta} = criarArma(camera);
 
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
@@ -105,6 +106,12 @@ window.addEventListener("keydown", function (event) {
 }
 });
 
+window.addEventListener("mousedown", function (event) {
+  if (!isInOrbitMode() && controls.isLocked) {
+    atirar(scene, camera, arma);
+  }
+});
+
 function movePlayer(delta) {
   const distance = 20 * delta;
 
@@ -127,10 +134,8 @@ function movePlayer(delta) {
 scene.add(castelo);
 scene.add(smallHouse);
 render();
-function render()
-{
+function render() {
   clock.update();
-  //Limita saltos de movimento causados por pausas entre frames
   const delta = Math.min(clock.getDelta(), 0.05);
 
   if (isInOrbitMode()) {
@@ -138,6 +143,9 @@ function render()
   } else if (controls.isLocked) {
     movePlayer(delta);
   }
+
+  atualizarProjeteis(delta, scene);
+
   requestAnimationFrame(render);
-  renderer.render(scene, camera) // Render scene
+  renderer.render(scene, camera);
 }
