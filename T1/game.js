@@ -15,6 +15,7 @@ import { toggleOrbit, isInOrbitMode, updateOrbit } from "./orbitCamera.js";
 import { createCrosshair } from "./crosshair.js";
 import { criarArma } from "./models/arma.js";
 import { atirar, atualizarProjeteis } from "./tiro.js";
+import { groundCollision } from "./collision.js";
 
 let scene, renderer, camera, light, flyingCamera;
 
@@ -34,10 +35,10 @@ camera.lookAt(new THREE.Vector3(0, 2, 0));
 scene.add(camera);
 
 // CÓDIGO PARA SALVAR E RESTAURAR A POSIÇÃO DA CÂMERA NO RELOAD DO SITE
-restoreCamera(camera);
+/*restoreCamera(camera);
 window.addEventListener("pagehide", function () {
   saveCamera(camera);
-});
+});*/
 
 const {arma,ponta} = criarArma(camera);
 
@@ -51,6 +52,8 @@ scene.add( axesHelper );
 // create the ground plane
 let plane = createGroundPlaneXZ(1000, 1000);
 scene.add(plane);
+
+const grounds = [plane, smallHouse, castelo];
 
 // mostra a posição atual da câmera
 let box = new SecondaryBox();
@@ -119,15 +122,11 @@ function movePlayer(delta) {
   if (keys.has("KeyS") || keys.has("ArrowDown")) controls.moveForward(-distance);
   if (keys.has("KeyD") || keys.has("ArrowRight")) controls.moveRight(distance);
   if (keys.has("KeyA") || keys.has("ArrowLeft")) controls.moveRight(-distance);
-  if (keys.has("KeyE")) camera.position.y += distance;
-  if (keys.has("KeyQ")) camera.position.y -= distance;
   // shiftzin pra acelerar a vida
   if (keys.has("ShiftLeft") && keys.has("KeyW")) controls.moveForward(distance * 4);
   if (keys.has("ShiftLeft") && keys.has("KeyS"))  controls.moveForward(-distance * 4);
   if (keys.has("ShiftLeft") && keys.has("KeyD")) controls.moveRight(distance * 4);
   if (keys.has("ShiftLeft") && keys.has("KeyA")) controls.moveRight(-distance * 4);
-  if (keys.has("ShiftLeft") && keys.has("KeyE")) camera.position.y += distance * 4;
-  if (keys.has("ShiftLeft") && keys.has("KeyQ")) camera.position.y -= distance * 4;
 }
 
 
@@ -142,6 +141,7 @@ function render() {
     updateOrbit();
   } else if (controls.isLocked) {
     movePlayer(delta);
+    groundCollision(camera, grounds);
   }
 
   atualizarProjeteis(delta, scene);
