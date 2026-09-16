@@ -15,7 +15,7 @@ import { toggleOrbit, isInOrbitMode, updateOrbit } from "./orbitCamera.js";
 import { createCrosshair } from "./crosshair.js";
 import { criarArma } from "./models/arma.js";
 import { atirar, atualizarProjeteis } from "./tiro.js";
-import { groundCollision } from "./collision.js";
+import { groundCollision, createWallCollision ,wallCollision } from "./collision.js";
 
 let scene, renderer, camera, light, flyingCamera;
 
@@ -132,6 +132,9 @@ function movePlayer(delta) {
 
 scene.add(castelo);
 scene.add(smallHouse);
+
+const wallCollisions = createWallCollision([castelo, smallHouse]);
+
 render();
 function render() {
   clock.update();
@@ -140,7 +143,9 @@ function render() {
   if (isInOrbitMode()) {
     updateOrbit();
   } else if (controls.isLocked) {
+    const previousPosition = camera.position.clone();
     movePlayer(delta);
+    wallCollision(camera, previousPosition, wallCollisions);
     groundCollision(camera, grounds, delta);
   }
 
