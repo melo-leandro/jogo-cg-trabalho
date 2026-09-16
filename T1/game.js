@@ -35,8 +35,8 @@ camera.lookAt(new THREE.Vector3(0, 2, 0));
 scene.add(camera);
 
 // CÓDIGO PARA SALVAR E RESTAURAR A POSIÇÃO DA CÂMERA NO RELOAD DO SITE
-/*restoreCamera(camera);
-window.addEventListener("pagehide", function () {
+//restoreCamera(camera);
+/*window.addEventListener("pagehide", function () {
   saveCamera(camera);
 });*/
 
@@ -141,7 +141,7 @@ function render() {
     updateOrbit();
   } else if (controls.isLocked) {
     movePlayer(delta);
-    groundCollision(camera, grounds);
+    groundCollision(camera, grounds, delta);
   }
 
   atualizarProjeteis(delta, scene);
