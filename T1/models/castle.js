@@ -1,8 +1,10 @@
 import * as THREE from 'three';
-import {setDefaultMaterial} from "./libs/util/util.js";
+import { smallHouse } from './smallHouse.js';
+import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial('#82796A');
+let material = setDefaultMaterial("gray");
+material.side = THREE.DoubleSide;
 
 // TORRES
 
@@ -25,12 +27,24 @@ towerSE.position.set(72.0, 9.0, 20.0);
 castelo.add(towerSE);
 
 //COROAS DAS TORRES CILINDRICAS
-let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true);
+let crownBaseGeometry = new THREE.CircleGeometry(5, 256);
+
 
 function createCrown(x, z) {
-    let crown = new THREE.Mesh(crownGeometry, material);
-    crown.position.set(x, 18.5, z);
-    castelo.add(crown);
+    let crownBase = new THREE.Mesh(crownBaseGeometry, material);
+
+    crownBase.position.set(x, 18, z);
+    crownBase.rotation.x = degreesToRadians(-90);
+    castelo.add(crownBase);
+
+    //secciona o topo da
+    for(let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 4) {
+        // aqui o último número diminui a circunferencia do cilindro (theta)
+        let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true, thetaStart, 0.5);
+        let crown = new THREE.Mesh(crownGeometry, material);
+        crown.position.set(x, 18.9, z);
+        castelo.add(crown);
+    }
 }
 
 createCrown(119.0, -20.0); // NW
@@ -41,14 +55,19 @@ createCrown(72.0, 20.0);   // SE
 // MURO
 
 // -> FRENTE E TRÁS
-let frontWallsGeometry = new THREE.BoxGeometry(2, 12, 32);
+let frontWallsGeometry = new THREE.BoxGeometry(2, 12, 16);
 
-let southWall = new THREE.Mesh(frontWallsGeometry, material);
-southWall.position.set(72, 6, 0)
-castelo.add(southWall);
+function createFrontWall(x, z) {
+    let frontWall = new THREE.Mesh(frontWallsGeometry, material);
+    frontWall.position.set(x, 6, z);
+    castelo.add(frontWall);
+}
 
+createFrontWall(72, 10);
+createFrontWall(72, -10);
 
-let northWall = new THREE.Mesh(frontWallsGeometry, material);
+let northWallGeometry = new THREE.BoxGeometry(2, 12, 40);
+let northWall = new THREE.Mesh(northWallGeometry, material);
 northWall.position.set(119, 6, 0)
 castelo.add(northWall);
 
@@ -87,30 +106,42 @@ castelo.add(westWalls);
 // TORRES FRONTAIS
 
 let frontTowerRectangleGeometry = new THREE.BoxGeometry(3, 18, 8);
-let frontTowerSquareGeometry = new THREE.BoxGeometry(5, 18, 5);
+let frontTowerSquareGeometry = new THREE.BoxGeometry(5, 18, 4);
 
-let eastFrontTowerRectangle = new THREE.Mesh(frontTowerRectangleGeometry, material);
-eastFrontTowerRectangle.position.set(71.5, 9, 6)
-castelo.add(eastFrontTowerRectangle);
+function createFrontTower(x, z) {
+    let frontTowerRectangle = new THREE.Mesh(frontTowerRectangleGeometry, material);
+    frontTowerRectangle.position.set(x, 9, z)
+    castelo.add(frontTowerRectangle);
+}
 
-let eastFrontTowerSquare = new THREE.Mesh(frontTowerSquareGeometry, material);
-eastFrontTowerSquare.position.set(70.5, 9, 4.5)
-castelo.add(eastFrontTowerSquare);
+function createFrontTowerSquare(x, z) {
+    let frontTowerSquare = new THREE.Mesh(frontTowerSquareGeometry, material);
+    frontTowerSquare.position.set(x, 9, z)
+    castelo.add(frontTowerSquare);
+}
 
-let westFrontTowerRectangle = new THREE.Mesh(frontTowerRectangleGeometry, material);
-westFrontTowerRectangle.position.set(71.5, 9, -6)
-castelo.add(westFrontTowerRectangle);
+createFrontTower(71.5, 6);
+createFrontTower(71.5, -6);
+createFrontTowerSquare(70.5, 4.5);
+createFrontTowerSquare(70.5, -4.5);
 
-let westFrontTowerSquare = new THREE.Mesh(frontTowerSquareGeometry, material);
-westFrontTowerSquare.position.set(70.5, 9, -4.5)
-castelo.add(westFrontTowerSquare);
+// TORRE DA ENTRADA + PAREDES
 
-// TORRE DA ENTRADA
-
-let entranceTowerGeometry = new THREE.BoxGeometry(7, 18, 5);
+let entranceTowerGeometry = new THREE.BoxGeometry(8, 13, 5);
 let entranceTower = new THREE.Mesh(entranceTowerGeometry, material);
-entranceTower.position.set(73, 9, 0)
+entranceTower.position.set(75, 11.5, 0)
 castelo.add(entranceTower);
+
+let entranceWallGeometry = new THREE.BoxGeometry(8, 18, 2);
+
+function createEntranceWall(x, z) {
+    let entranceWall = new THREE.Mesh(entranceWallGeometry, material);
+    entranceWall.position.set(x, 9, z)
+    castelo.add(entranceWall);
+}
+
+createEntranceWall(75, 3);
+createEntranceWall(75, -3);
 
 //TORRE LATERAIS E TRASEIRA
 let middleTowersGeometry = new THREE.BoxGeometry(8, 18, 5);
@@ -146,29 +177,38 @@ createSmallTower(99, -20); // TorreCentralOeste
 createSmallTower(99, 20);  // TorreCentralLeste
 createSmallTower(77, -20); // TorreCilindricaSO
 createSmallTower(72, 15.5); // TorreCilindricaSE
-createSmallTower(75.5, -2.5);// TorreFrontal
+createSmallTower(78.5, -3.5);// TorreFrontal
 createSmallTower(119, -16); // TorreCilindricaNO
 createSmallTower(119, 15); // TorreCilindricaNE
 createSmallTower(119, 4); // TorreTraseira
 
 //COROAS DAS TORRES PEQUENAS ADJACENTES
-let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true);
+let smallCrownBaseGeometry = new THREE.CircleGeometry(1.2, 256);
 
 function createSmallCrown(x, z) {
-    let smallCrown = new THREE.Mesh(smallCrownGeometry, material);
-    smallCrown.position.set(x, 20.2, z);
-    castelo.add(smallCrown);
+    let smallCrownBase = new THREE.Mesh(smallCrownBaseGeometry, material);
+    smallCrownBase.position.set(x, 20, z);
+    smallCrownBase.rotation.x = degreesToRadians(-90);
+    castelo.add(smallCrownBase);
+
+
+    for (let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 2) {
+        let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true, thetaStart, 1);
+        let smallCrown = new THREE.Mesh(smallCrownGeometry, material);
+        smallCrown.position.set(x, 20.5, z);
+        castelo.add(smallCrown);
+    }
 }
 
 createSmallCrown(99, -20); // 1
 createSmallCrown(99, 20);  // 2
 createSmallCrown(77, -20); // 3
 createSmallCrown(72, 15.5); // 4
-createSmallCrown(75.5, -2.5); // 5
+createSmallCrown(78.5, -3.5); // 5
 createSmallCrown(119, -16); // 6
 createSmallCrown(119, 15); // 7
 createSmallCrown(119, 4); // 8
 
-castelo.scale.setScalar(2);
+castelo.scale.setScalar(3);
 
 export { castelo };
