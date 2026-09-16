@@ -13,6 +13,7 @@ import { castelo } from "./models/castle.js";
 import { restoreCamera, saveCamera } from "./cameraStorage.js";
 import { toggleOrbit, isInOrbitMode, updateOrbit } from "./orbitCamera.js";
 import { createCrosshair } from "./crosshair.js";
+import { criarArma } from "./models/arma.js";
 
 let scene, renderer, camera, light, flyingCamera;
 
@@ -37,6 +38,7 @@ window.addEventListener("pagehide", function () {
   saveCamera(camera);
 });
 
+const arma = criarArma(camera);
 
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
