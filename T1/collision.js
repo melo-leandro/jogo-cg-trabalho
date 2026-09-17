@@ -101,3 +101,7 @@ export function groundCollision(camera, floors, delta){
         }
     }
 }
+
+export function pontoColideComAlgum(ponto, boxes) {
+  return boxes.some((box) => box.containsPoint(ponto));
+}

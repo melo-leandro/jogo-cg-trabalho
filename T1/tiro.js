@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { setDefaultMaterial } from "./libs/util/util.js";
+import { pontoColideComAlgum } from "./collision.js";
 
-const VEL_PROJETIL = 40;
+const VEL_PROJETIL = 100;
 const DIST_MAX = 100;
 const CAD_MAX = 0.25;
 
@@ -29,7 +30,7 @@ export function atirar(scene, camera, ponta){
     projeteis.push({ mesh: bala, direcao: direction, distanciaPercorrida: 0 });
 }
 
-export function atualizarProjeteis(delta, scene) {
+export function atualizarProjeteis(delta, scene, wallCollisions) {
     tempoDecorrido += delta;
 
     for (let i = projeteis.length - 1; i >= 0; i--) {
@@ -38,12 +39,15 @@ export function atualizarProjeteis(delta, scene) {
         const passo = VEL_PROJETIL * delta;
 
         p.mesh.position.addScaledVector(p.direcao, passo);
-
         p.distanciaPercorrida += passo;
 
-        if (p.distanciaPercorrida > DIST_MAX) {
-        scene.remove(p.mesh);
-        projeteis.splice(i, 1);
+        const bateuNaParede = pontoColideComAlgum(p.mesh.position, wallCollisions);
+        const passouDistancia = p.distanciaPercorrida > DIST_MAX;
+
+        if (bateuNaParede || passouDistancia) {
+            scene.remove(p.mesh);
+            projeteis.splice(i, 1);
         }
     }
 }
+
