@@ -19,14 +19,12 @@ export function toggleOrbit (camera, renderer, fpsControls){
             orbitControls = new OrbitControls(camera, renderer.domElement);
         }
 
-        let direction = new THREE.Vector3();
-        camera.getWorldDirection(direction);
-        direction.multiplyScalar (20);
-        let target = camera.position.clone();
-        target.add (direction);
+        const ALTURA_VISAO = 240; 
+        const target = new THREE.Vector3(camera.position.x, 0, camera.position.z);
+        camera.position.set(target.x, target.y + ALTURA_VISAO, target.z + ALTURA_VISAO * 0.4);
+
         orbitControls.target.copy(target);
 
-        orbitControls.enabled = true;
         orbitControls.update();
     } else {
         orbitControls.dispose(); 
