@@ -90,7 +90,7 @@ window.addEventListener("keydown", function (event) {
   if (event.code === "KeyC") {
 
     toggleOrbit(camera, renderer, controls);
-
+    arma.visible = !isInOrbitMode();
     infoBox.infoBox.innerHTML = "";
 
     if (isInOrbitMode()) {
@@ -111,8 +111,7 @@ window.addEventListener("keydown", function (event) {
 
 window.addEventListener("mousedown", function (event) {
   if (!isInOrbitMode() && controls.isLocked) {
-    atirar(scene, camera, arma);
-  }
+  atirar(scene, camera, ponta);  }
 });
 
 function movePlayer(delta) {
@@ -149,7 +148,7 @@ function render() {
     groundCollision(camera, grounds, delta);
   }
 
-  atualizarProjeteis(delta, scene);
+  atualizarProjeteis(delta, scene, wallCollisions);
 
   requestAnimationFrame(render);
   renderer.render(scene, camera);
