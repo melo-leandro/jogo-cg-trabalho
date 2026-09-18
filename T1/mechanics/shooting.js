@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { setDefaultMaterial } from "./libs/util/util.js";
+import { setDefaultMaterial } from "../libs/util/util.js";
 import { pontoColideComAlgum } from "./collision.js";
 
 const VEL_PROJETIL = 100;
