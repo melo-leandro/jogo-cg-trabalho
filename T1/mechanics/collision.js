@@ -1,107 +1,118 @@
 import * as THREE from "three";
 
 const raycaster = new THREE.Raycaster();
-//Direção do raio 
-const down = new THREE.Vector3(0,-1,0);
+const down = new THREE.Vector3(0, -1, 0);
 
 let velocityY = 0;
 const gravity = 20;
-
-//Considerei que o player e um cilindro, por que da pra usar o raio no lugar de várias dimensões
 const playerWidth = 0.6;
 const playerHeight = 4;
+const maximumStepHeight = 0.5;
+const maximumMovementStep = playerWidth / 2;
 const minimumWallHeight = 1.1;
 
-export function createWallCollision(walls){
-    const wallCollisions = [];
-    
-    for(const object of walls){
-        object.updateWorldMatrix(true, true);
+export function createWallCollision(objects) {
+  const colliders = [];
 
-        object.traverse((child) => {
-            if(!child.isMesh) return;
+  for (const object of objects) {
+    object.updateWorldMatrix(true, true);
 
-            child.updateWorldMatrix(true, false);
+    object.traverse((child) => {
+      if (!child.isMesh) return;
 
-            const box = new THREE.Box3().setFromObject(child);
-            
-            if(box.max.y - box.min.y >= minimumWallHeight){
-                wallCollisions.push(box);
-            }
-        });
-    }
+      child.updateWorldMatrix(true, false);
+      const worldBox = new THREE.Box3().setFromObject(child);
+      if (worldBox.max.y - worldBox.min.y < minimumWallHeight) return;
 
-    return wallCollisions;
-}
+      child.geometry.computeBoundingBox();
 
-function isColliding(camera, wallCollisions){
-    const playerBottom = camera.position.y - playerHeight;
-    const playerTop = camera.position.y;
+      const localBox = child.geometry.boundingBox.clone();
+      const inverseMatrix = child.matrixWorld.clone().invert();
+      const scale = child.getWorldScale(new THREE.Vector3());
+      const localPoint = new THREE.Vector3();
 
-    return wallCollisions.some((wall) => {
-        const overlapsVertically = wall.max.y >= playerBottom && wall.min.y <= playerTop;
+      colliders.push({
+        walkable: child.userData.walkable === true,
 
-        const overlapsHorizontally = camera.position.x + playerWidth >= wall.min.x  - playerWidth && 
-            camera.position.x - playerWidth <= wall.max.x + playerWidth &&
-            camera.position.z + playerWidth >= wall.min.z - playerWidth &&
-            camera.position.z - playerWidth <= wall.max.z + playerWidth;
+        containsPoint(point) {
+          return localBox.containsPoint(localPoint.copy(point).applyMatrix4(inverseMatrix));
+        },
 
-        return overlapsVertically && overlapsHorizontally;
-    });
-}
+        intersectsPlayer(position) {
+          const playerBottom = position.y - playerHeight;
+          const playerTop = position.y;
+          const overlapsVertically =
+            worldBox.max.y - maximumStepHeight > playerBottom &&
+            worldBox.min.y < playerTop;
 
-export function wallCollision(camera, lastPosition, wallCollisions){
-    const nextX = camera.position.x;
-    const nextZ = camera.position.z;
+          if (!overlapsVertically) return false;
 
-    camera.position.x = nextX;
-    camera.position.z = lastPosition.z;
+          localPoint.copy(position).applyMatrix4(inverseMatrix);
+          const radiusX = playerWidth / Math.abs(scale.x);
+          const radiusZ = playerWidth / Math.abs(scale.z);
 
-    if (isColliding(camera, wallCollisions)) {
-        camera.position.x = lastPosition.x;
-    }
-
-    camera.position.z = nextZ;
-    if (isColliding(camera, wallCollisions)) {
-        camera.position.z = lastPosition.z;
-    }
-}
-
-//Cria colisão pro chão
-export function groundCollision(camera, floors, delta){
-    const viewHeight = 4;
-    
-    velocityY -= gravity * delta;
-    camera.position.y += velocityY * delta;
-    
-    const rayOrigin = camera.position.clone();
-    //Considerei a origem do raio 1 acima, pra se tiver parcialmente dentro do chão, ele não ficar preso
-    rayOrigin.y += viewHeight +  0.5;
-
-    //Lança o raio pra baixo e cria quais locais ele deu interseção
-    raycaster.set(rayOrigin, down);
-    
-    const intersections = raycaster.intersectObjects(floors, true);
-
-    //Confere se ainda tem interseções e reajusta a câmera se houver
-    if (intersections.length > 0) {
-        //pra garantir que a câmera está correta (estava com medo de que tivesse bugs ao subir em estruturas)
-        console.log(
-            "câmera:",
-            camera.position.y,
-            "piso detectado:",
-            intersections[0]?.point.y
-        );
-        const floorHeight = intersections[0].point.y;
-        const minimumCameraHeight = floorHeight + viewHeight;
-
-        if (camera.position.y <= minimumCameraHeight) {
-            camera.position.y = minimumCameraHeight;
-            velocityY = 0;
+          return localPoint.x + radiusX >= localBox.min.x &&
+            localPoint.x - radiusX <= localBox.max.x &&
+            localPoint.z + radiusZ >= localBox.min.z &&
+            localPoint.z - radiusZ <= localBox.max.z;
         }
-    }
+      });
+    });
+  }
+
+  return colliders;
 }
 
-export function pontoColideComAlgum(ponto, boxes) {
-  return boxes.some((box) => box.containsPoint(ponto));
+function isColliding(position, colliders) {
+  return colliders.some(
+    (collider) => !collider.walkable && collider.intersectsPlayer(position)
+  );
+}
+
+export function wallCollision(camera, lastPosition, colliders) {
+  const movementX = camera.position.x - lastPosition.x;
+  const movementZ = camera.position.z - lastPosition.z;
+  const steps = Math.max(
+    1,
+    Math.ceil(Math.max(Math.abs(movementX), Math.abs(movementZ)) / maximumMovementStep)
+  );
+  const stepX = movementX / steps;
+  const stepZ = movementZ / steps;
+
+  camera.position.x = lastPosition.x;
+  camera.position.z = lastPosition.z;
+
+  for (let step = 0; step < steps; step++) {
+    const previousX = camera.position.x;
+    camera.position.x += stepX;
+    if (isColliding(camera.position, colliders)) camera.position.x = previousX;
+
+    const previousZ = camera.position.z;
+    camera.position.z += stepZ;
+    if (isColliding(camera.position, colliders)) camera.position.z = previousZ;
+  }
+}
+
+export function groundCollision(camera, floors, delta) {
+  const viewHeight = 4;
+
+  velocityY -= gravity * delta;
+  camera.position.y += velocityY * delta;
+
+  const rayOrigin = camera.position.clone();
+  rayOrigin.y += viewHeight + 0.5;
+  raycaster.set(rayOrigin, down);
+
+  const intersections = raycaster.intersectObjects(floors, true);
+  if (intersections.length === 0) return;
+
+  const minimumCameraHeight = intersections[0].point.y + viewHeight;
+  if (camera.position.y <= minimumCameraHeight) {
+    camera.position.y = minimumCameraHeight;
+    velocityY = 0;
+  }
+}
+
+export function pontoColideComAlgum(point, colliders) {
+  return colliders.some((collider) => collider.containsPoint(point));
 }

@@ -64,6 +64,7 @@ function createRamp(x, y, z, length, height, width, rotationY, color) {
 
   let material = setDefaultMaterial(color);
   let ramp = new THREE.Mesh(rampGeometry, material);
+  ramp.userData.walkable = true;
 
   ramp.position.set(x, y, z);
   ramp.rotation.y = rotationY;
