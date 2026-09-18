@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { isBuildCameraEnabled, toggleBuildCamera } from "./controls/buildCamera.js";
 import { createPlayerControls } from "./controls/playerControls.js";
 import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.js";
 import { criarArma } from "./models/gun.js";
@@ -11,21 +12,34 @@ const { scene, renderer, camera, grounds, wallCollisions } = createWorld();
 const { controls, update: movePlayer } = createPlayerControls(
   camera,
   renderer.domElement,
-  () => !isInOrbitMode()
+  () => !isInOrbitMode(),
+  isBuildCameraEnabled
 );
 const { arma, ponta } = criarArma(camera);
 const hud = createHud(camera);
 
 window.addEventListener("keydown", (event) => {
-  if (event.code !== "KeyC") return;
+  if (event.code !== "KeyC" || event.repeat || isBuildCameraEnabled()) return;
 
   toggleOrbit(camera, renderer, controls);
   arma.visible = !isInOrbitMode();
   hud.showCameraMode(isInOrbitMode());
 });
 
+// modo construção
+window.addEventListener("keydown", (event) => {
+  if (event.code !== "KeyB" || event.repeat || isInOrbitMode()) return;
+
+  const enabled = toggleBuildCamera();
+  arma.visible = !enabled;
+  hud.setCrosshairVisible(!enabled);
+  hud.showBuildMode(enabled);
+});
+
 window.addEventListener("mousedown", () => {
-  if (!isInOrbitMode() && controls.isLocked) atirar(scene, camera, ponta);
+  if (!isInOrbitMode() && !isBuildCameraEnabled() && controls.isLocked) {
+    atirar(scene, camera, ponta);
+  }
 });
 
 const clock = new THREE.Timer();
@@ -43,8 +57,11 @@ function render() {
   } else if (controls.isLocked) {
     const previousPosition = camera.position.clone();
     movePlayer(delta);
-    wallCollision(camera, previousPosition, wallCollisions);
-    groundCollision(camera, grounds, delta);
+
+    if (!isBuildCameraEnabled()) {
+      wallCollision(camera, previousPosition, wallCollisions);
+      groundCollision(camera, grounds, delta);
+    }
   }
 
   atualizarProjeteis(delta, scene, wallCollisions);
