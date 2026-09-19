@@ -30,12 +30,43 @@ export function createWallCollision(objects) {
       const inverseMatrix = child.matrixWorld.clone().invert();
       const scale = child.getWorldScale(new THREE.Vector3());
       const localPoint = new THREE.Vector3();
+      const isCylinder = child.geometry.type === "CylinderGeometry";
+      const isRamp =
+        child.userData.walkable === true &&
+        child.geometry.type === "ExtrudeGeometry";
+      let cylinderRadius = 0;
+      const worldCylinderCenter = new THREE.Vector3();
+      let worldCylinderRadius = 0;
+
+      if (isCylinder) {
+        cylinderRadius = Math.max(
+          child.geometry.parameters.radiusTop,
+          child.geometry.parameters.radiusBottom
+        );
+        worldCylinderCenter.setFromMatrixPosition(child.matrixWorld);
+        worldCylinderRadius = cylinderRadius * Math.max(
+          Math.abs(scale.x),
+          Math.abs(scale.z)
+        );
+      }
 
       colliders.push({
-        walkable: child.userData.walkable === true,
+        blocksMovement: !child.userData.walkable || isRamp,
 
         containsPoint(point) {
-          return localBox.containsPoint(localPoint.copy(point).applyMatrix4(inverseMatrix));
+          localPoint.copy(point).applyMatrix4(inverseMatrix);
+
+          if (isCylinder) {
+            const insideHeight =
+              localPoint.y >= localBox.min.y && localPoint.y <= localBox.max.y;
+            const horizontalDistance = Math.hypot(
+              point.x - worldCylinderCenter.x,
+              point.z - worldCylinderCenter.z
+            );
+            return insideHeight && horizontalDistance <= worldCylinderRadius;
+          }
+
+          return localBox.containsPoint(localPoint);
         },
 
         intersectsPlayer(position) {
@@ -48,6 +79,43 @@ export function createWallCollision(objects) {
           if (!overlapsVertically) return false;
 
           localPoint.copy(position).applyMatrix4(inverseMatrix);
+
+          if (isRamp) {
+            const sideMargin = playerWidth / Math.abs(scale.z);
+            const isAtLeftEdge =
+              localPoint.z >= localBox.min.z - sideMargin &&
+              localPoint.z <= localBox.min.z + sideMargin;
+            const isAtRightEdge =
+              localPoint.z >= localBox.max.z - sideMargin &&
+              localPoint.z <= localBox.max.z + sideMargin;
+            const isAlongRamp =
+              localPoint.x >= localBox.min.x - sideMargin &&
+              localPoint.x <= localBox.max.x + sideMargin;
+            const rampLength = localBox.max.x - localBox.min.x;
+            const rampHeight = localBox.max.y - localBox.min.y;
+            const rampProgress = THREE.MathUtils.clamp(
+              (localPoint.x - localBox.min.x) / rampLength,
+              0,
+              1
+            );
+            const rampSurface = localBox.min.y + rampHeight * rampProgress;
+            const playerBottom =
+              localPoint.y - playerHeight / Math.abs(scale.y);
+
+            return isAlongRamp &&
+              (isAtLeftEdge || isAtRightEdge) &&
+              playerBottom < rampSurface - 0.05 &&
+              localPoint.y > localBox.min.y;
+          }
+
+          if (isCylinder) {
+            const horizontalDistance = Math.hypot(
+              position.x - worldCylinderCenter.x,
+              position.z - worldCylinderCenter.z
+            );
+            return horizontalDistance <= worldCylinderRadius + playerWidth;
+          }
+
           const radiusX = playerWidth / Math.abs(scale.x);
           const radiusZ = playerWidth / Math.abs(scale.z);
 
@@ -65,8 +133,37 @@ export function createWallCollision(objects) {
 
 function isColliding(position, colliders) {
   return colliders.some(
-    (collider) => !collider.walkable && collider.intersectsPlayer(position)
+    (collider) => collider.blocksMovement && collider.intersectsPlayer(position)
   );
+}
+
+function moveWithWallSlide(position, movement, colliders) {
+  if (movement.lengthSq() === 0) return;
+
+  const direction = Math.atan2(movement.z, movement.x);
+  const candidate = position.clone();
+  let bestScore = -Infinity;
+  let bestAngle = 0;
+  const samples = 32;
+
+  for (let sample = 0; sample < samples; sample++) {
+    const angle = direction + sample * Math.PI * 2 / samples;
+    candidate.x = position.x + Math.cos(angle) * movement.length();
+    candidate.z = position.z + Math.sin(angle) * movement.length();
+
+    if (!isColliding(candidate, colliders)) {
+      const score = Math.cos(angle - direction);
+      if (score > bestScore) {
+        bestScore = score;
+        bestAngle = angle;
+      }
+    }
+  }
+
+  if (bestScore > -Infinity) {
+    position.x += Math.cos(bestAngle) * movement.length();
+    position.z += Math.sin(bestAngle) * movement.length();
+  }
 }
 
 export function wallCollision(camera, lastPosition, colliders) {
@@ -76,20 +173,14 @@ export function wallCollision(camera, lastPosition, colliders) {
     1,
     Math.ceil(Math.max(Math.abs(movementX), Math.abs(movementZ)) / maximumMovementStep)
   );
-  const stepX = movementX / steps;
-  const stepZ = movementZ / steps;
+  const stepMovement = new THREE.Vector3();
 
   camera.position.x = lastPosition.x;
   camera.position.z = lastPosition.z;
 
   for (let step = 0; step < steps; step++) {
-    const previousX = camera.position.x;
-    camera.position.x += stepX;
-    if (isColliding(camera.position, colliders)) camera.position.x = previousX;
-
-    const previousZ = camera.position.z;
-    camera.position.z += stepZ;
-    if (isColliding(camera.position, colliders)) camera.position.z = previousZ;
+    stepMovement.set(movementX / steps, 0, movementZ / steps);
+    moveWithWallSlide(camera.position, stepMovement, colliders);
   }
 }
 
@@ -103,7 +194,12 @@ export function groundCollision(camera, floors, delta) {
   rayOrigin.y += viewHeight + 0.5;
   raycaster.set(rayOrigin, down);
 
-  const intersections = raycaster.intersectObjects(floors, true);
+  const intersections = raycaster
+    .intersectObjects(floors, true)
+    .filter(({ object, point }) =>
+      (object.userData.walkable === true || object.userData.ground === true) &&
+      point.y <= camera.position.y + maximumStepHeight
+    );
   if (intersections.length === 0) return;
 
   const minimumCameraHeight = intersections[0].point.y + viewHeight;

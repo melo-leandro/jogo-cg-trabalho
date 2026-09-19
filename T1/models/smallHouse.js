@@ -6,10 +6,13 @@ let material = setDefaultMaterial("gray");
 
 
 // -> PAREDES
-function wall(x, y, z, width, height, depth, rotationY, color) {
+function wall(x, y, z, width, height, depth, rotationY, color, ground) {
     let wallGeometry = new THREE.BoxGeometry(width, height, depth);
     let material = setDefaultMaterial(color);
     let wallMesh = new THREE.Mesh(wallGeometry, material);
+  if (ground === true) {
+    wallMesh.userData.ground = true;
+  }
     wallMesh.position.set(x, y, z);
     wallMesh.rotation.y = rotationY;
     smallHouse.add(wallMesh);
@@ -38,6 +41,7 @@ wall(155, 16, 15, 1, 4, 4, degreesToRadians(166), "beige");
 function createFloor(x, y, z, width, height, depth) {
     let floorGeometry = new THREE.BoxGeometry(width, height, depth);
     let floor = new THREE.Mesh(floorGeometry, material);
+    floor.userData.walkable = true;
     floor.position.set(x, y, z);
     floor.rotation.y = degreesToRadians(166);
     smallHouse.add(floor);
@@ -74,9 +78,9 @@ function createRamp(x, y, z, length, height, width, rotationY, color) {
 }
 
 createRamp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "sienna"); // primeira rampa
-wall(170.2, 2.5, 25.4, 2.5, 4.5, 2.5, degreesToRadians(76), "brown"); // bloco entre as rampas
+wall(170.2, 2.5, 25.4, 2.5, 4.5, 2.5, degreesToRadians(76), "brown", true); // bloco entre as rampas
 createRamp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "sienna"); // segunda rampa
-wall(173.14, 6.75, 13.58, 2.5, 4.5, 2.5, degreesToRadians(166), "brown"); // bloco no fim da escada
+wall(173.14, 6.75, 13.58, 2.5, 4.5, 2.5, degreesToRadians(166), "brown", true); // bloco no fim da escada
 
 wall(170.01, 2.5, 21.44, 0.2, 4.5, 5.09, degreesToRadians(166), "brown"); // parede fina da direita
 wall(171.72, 2.5, 14.55, 0.2, 4.5, 5.09, degreesToRadians(166), "brown"); // parede fina da esquerda
