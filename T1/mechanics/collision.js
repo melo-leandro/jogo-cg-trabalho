@@ -8,6 +8,7 @@ const gravity = 20;
 const playerWidth = 0.6;
 const playerHeight = 4;
 const maximumStepHeight = 0.5;
+const maximumGroundDrop = 1;
 const maximumMovementStep = playerWidth / 2;
 const minimumWallHeight = 1.1;
 
@@ -202,9 +203,15 @@ export function groundCollision(camera, floors, delta) {
     );
   if (intersections.length === 0) return;
 
-  const minimumCameraHeight = intersections[0].point.y + viewHeight;
-  if (camera.position.y <= minimumCameraHeight) {
-    camera.position.y = minimumCameraHeight;
+  const groundHeight = intersections[0].point.y + viewHeight;
+  const heightDifference = groundHeight - camera.position.y;
+  const canStepUp = heightDifference >= 0 &&
+    heightDifference <= maximumStepHeight;
+  const canFollowRampDown = heightDifference < 0 &&
+    Math.abs(heightDifference) <= maximumGroundDrop;
+
+  if (canStepUp || canFollowRampDown) {
+    camera.position.y = groundHeight;
     velocityY = 0;
   }
 }
