@@ -4,10 +4,9 @@ import { ZF, wall, floor, ramp } from "./tools.js";
 
 let tallHouse = new THREE.Group();
 
-const wallMaterial = setDefaultMaterial("beige");
-const floorMaterial = setDefaultMaterial("gray");
-const rampMaterial = setDefaultMaterial("sienna");
-const supportMaterial = setDefaultMaterial("brown");
+const wallMaterial = setDefaultMaterial("wheat");
+const floorMaterial = setDefaultMaterial("slategray");
+const woodMaterial = setDefaultMaterial("saddlebrown");
 
 const sideWallGeometry = new THREE.BoxGeometry(1, 18, 20);
 const frontWallGeometry = new THREE.BoxGeometry(1, 18, 6);
@@ -42,15 +41,15 @@ floor(164.17, 18.25, 17.5, 21, 0.5, 17, degreesToRadians(166), tallHouse, floorM
 
 // RAMPAS/ESCADAS
 
-ramp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "sienna", tallHouse, rampMaterial); // primeira rampa
-wall(170.2, 2.5, 25.4, null, null, null, degreesToRadians(76), tallHouse, supportMaterial, insideRampGeometry); // bloco entre as rampas
-ramp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "sienna", tallHouse, rampMaterial); // segunda rampa
-wall(173.14, 6.75, 13.58, null, null, null, degreesToRadians(166), tallHouse, supportMaterial, insideRampGeometry); // bloco no fim da escada
+ramp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial); // primeira rampa
+floor(170.2, 2.5, 25.4, null, null, null, degreesToRadians(76), tallHouse, woodMaterial, insideRampGeometry); // bloco entre as rampas
+ramp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "saddlebrown", tallHouse, woodMaterial); // segunda rampa
+floor(173.14, 6.75, 13.58, null, null, null, degreesToRadians(166), tallHouse, woodMaterial, insideRampGeometry); // bloco no fim da escada
 
-wall(170.01, 2.5, 21.44, null, null, null, degreesToRadians(166), tallHouse, supportMaterial, thinWallGeometry); // parede fina da direita
-wall(171.72, 2.5, 14.55, null, null, null, degreesToRadians(166), tallHouse, supportMaterial, thinWallGeometry); // parede fina da esquerda
+wall(170.01, 2.5, 21.44, null, null, null, degreesToRadians(166), tallHouse, woodMaterial, thinWallGeometry); // parede fina da direita
+wall(171.72, 2.5, 14.55, null, null, null, degreesToRadians(166), tallHouse, woodMaterial, thinWallGeometry); // parede fina da esquerda
 
-ramp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "sienna", tallHouse, rampMaterial); // rampa da porta
+ramp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial); // rampa da porta
 
 tallHouse.scale.setScalar(2);
 
@@ -59,7 +58,7 @@ export { tallHouse };
 
 // https://www.youtube.com/watch?v=dQw4w9WgXcQ
 let coolGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 128, 8, 2, 5);
-let coolMaterial = setDefaultMaterial("cyan");
+let coolMaterial = setDefaultMaterial("sienna");
 let easterEgg = new THREE.Mesh(coolGeometry, coolMaterial);
 easterEgg.position.set(173.2, 2, 13.5);
 tallHouse.add(easterEgg);

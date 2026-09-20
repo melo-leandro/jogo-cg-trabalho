@@ -3,7 +3,7 @@ import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
 import { floor, ramp, wall, ZF } from "./tools.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial("gray");
+let material = setDefaultMaterial("slategray");
 material.side = THREE.DoubleSide;
 
 // TORRES
@@ -98,48 +98,39 @@ westWalls.add(fourthWestWall);
 
 // -> PASSARELA
 
-const purpleMaterial = setDefaultMaterial("#aa00ff");
-const greenMaterial = setDefaultMaterial("#00c853");
-const blueMaterial = setDefaultMaterial("#2962ff");
-const limeMaterial = setDefaultMaterial("#aeea00");
-const brightGreenMaterial = setDefaultMaterial("#64dd17");
-const orangeMaterial = setDefaultMaterial("#ffab00");
-const yellowMaterial = setDefaultMaterial("#ffd600");
-
 const frontPlatformGeometry = new THREE.BoxGeometry(2 + 2 * ZF, 0.5, 12 + 2 * ZF);
 const entrancePlatformGeometry = new THREE.BoxGeometry(6.5 + 2 * ZF, 0.5, 2.5 + 2 * ZF);
 const pillarGeometry = new THREE.BoxGeometry(1, 12, 1);
 const elevatedPillarGeometry = new THREE.BoxGeometry(1, 13, 1);
 
 // em cima da rampa de acesso (formato em U)
-floor(104, 11.75, -53 / 3, 8 / 3, 0.5, 8 / 3, 0, castelo, setDefaultMaterial("#ff1744"));
-floor(1205 / 12, 11.75, -46 / 3, 59 / 6, 0.5, 2, 0, castelo, setDefaultMaterial("#d500f9"));
-floor(94.5, 11.75, -50 / 3, 2, 0.5, 14 / 3, 0, castelo, setDefaultMaterial("#c51162"));
+floor(104, 11.75, -53 / 3, 8 / 3, 0.5, 8 / 3, 0, castelo, material);
+floor(1205 / 12, 11.75, -46 / 3, 59 / 6, 0.5, 2, 0, castelo, material);
+floor(94.5, 11.75, -50 / 3, 2, 0.5, 14 / 3, 0, castelo, material);
 
 // encostando na parede afundada
-floor(86.5, 11.75, -20, 9, 0.5, 2, 0, castelo, purpleMaterial);
-floor(92.25, 11.75, -18, 6.5, 0.5, 2, 0, castelo, setDefaultMaterial("#f50057"));
-floor(80, 11.75, -18, 8, 0.5, 2, 0, castelo, setDefaultMaterial("#6200ea"));
+floor(86.5, 11.75, -20, 9, 0.5, 2, 0, castelo, material);
+floor(92.25, 11.75, -18, 6.5, 0.5, 2, 0, castelo, material);
+floor(80, 11.75, -18, 8, 0.5, 2, 0, castelo, material);
 
 // frente do castelo, contornando a torre da entrada
-floor(74, 11.75, 10, null, null, null, 0, castelo, greenMaterial, frontPlatformGeometry);
-floor(78.25, 11.75, 5.25, null, null, null, 0, castelo, setDefaultMaterial("#00bfa5"), entrancePlatformGeometry);
-floor(80.25, 11.75, -1, 2.5, 0.5, 11, 0, castelo, setDefaultMaterial("#00b8d4"));
-floor(78.25, 11.75, -5.25, null, null, null, 0, castelo, setDefaultMaterial("#0091ea"), entrancePlatformGeometry);
-floor(74, 11.75, -10, null, null, null, 0, castelo, blueMaterial, frontPlatformGeometry);
+floor(74, 11.75, 10, null, null, null, 0, castelo, material, frontPlatformGeometry);
+floor(78.25, 11.75, 5.25, null, null, null, 0, castelo, material, entrancePlatformGeometry);
+floor(80.25, 11.75, -1, 2.5, 0.5, 11, 0, castelo, material);
+floor(78.25, 11.75, -5.25, null, null, null, 0, castelo, material, entrancePlatformGeometry);
+floor(74, 11.75, -10, null, null, null, 0, castelo, material, frontPlatformGeometry);
 
 // direita do castelo, considerando a entrada
-floor(107.5, 12.75, 18, 15, 0.5, 2, 0, castelo, limeMaterial);
-floor(86.58, 11.75, 18, 21.16, 0.5, 2, 0, castelo, brightGreenMaterial);
+floor(107.5, 12.75, 18, 15, 0.5, 2, 0, castelo, material);
+floor(86.58, 11.75, 18, 21.16, 0.5, 2, 0, castelo, material);
 
 // fundo do castelo + conexão com o início da passarela
-floor(117, 11.75, -7.92, 2, 0.5, 16.16, 0, castelo, orangeMaterial);
-floor(117, 12.75, 9.5, 2, 0.5, 13, 0, castelo, yellowMaterial);
-floor(661 / 6, 11.75, -18, 29 / 3, 0.5, 2, 0, castelo, setDefaultMaterial("#ff6d00"));
+floor(117, 11.75, -7.92, 2, 0.5, 16.16, 0, castelo, material);
+floor(117, 12.75, 9.5, 2, 0.5, 13, 0, castelo, material);
+floor(661 / 6, 11.75, -18, 29 / 3, 0.5, 2, 0, castelo, material);
 
 const inclinedPlatformLength = 3.15;
 const inclinedPlatformWidth = 2;
-const inclinedPlatformMaterial = setDefaultMaterial("red");
 const inclinedPlatformGeometry = new THREE.BoxGeometry(
     inclinedPlatformLength + 2 * ZF,
     0.5,
@@ -149,7 +140,7 @@ const inclinedPlatformGeometry = new THREE.BoxGeometry(
 function inclinedPlatform(x, y, z, angleZ, rotationY) {
     const platform = floor(
         0, 0, 0, null, null, null, 0,
-        castelo, inclinedPlatformMaterial, inclinedPlatformGeometry
+        castelo, material, inclinedPlatformGeometry
     );
 
     platform.position.set(x, y, z);
@@ -166,17 +157,17 @@ inclinedPlatform(117, 11.99, 0, degreesToRadians(18.85), degreesToRadians(-90));
 inclinedPlatform(97, 11.99, 18, degreesToRadians(18.85), 0);
 
 // PILARES DA PASSARELA
-wall(86.5, 6, -20, null, null, null, 0, castelo, purpleMaterial, pillarGeometry);
+wall(86.5, 6, -20, null, null, null, 0, castelo, material, pillarGeometry);
 // frente do castelo, esquerda e direita (pov do fundo do castelo pra frente)
-wall(74, 6, 10, null, null, null, 0, castelo, greenMaterial, pillarGeometry);
-wall(74, 6, -10, null, null, null, 0, castelo, blueMaterial, pillarGeometry);
+wall(74, 6, 10, null, null, null, 0, castelo, material, pillarGeometry);
+wall(74, 6, -10, null, null, null, 0, castelo, material, pillarGeometry);
 // atras da casa alta
-wall(107.5, 6.5, 18, null, null, null, 0, castelo, limeMaterial, elevatedPillarGeometry);
+wall(107.5, 6.5, 18, null, null, null, 0, castelo, material, elevatedPillarGeometry);
 // direita do castelo
-wall(86.58, 6, 18, null, null, null, 0, castelo, brightGreenMaterial, pillarGeometry);
+wall(86.58, 6, 18, null, null, null, 0, castelo, material, pillarGeometry);
 // fundo do castelo, esquerda e direita
-wall(117, 6, -7.92, null, null, null, 0, castelo, orangeMaterial, pillarGeometry);
-wall(117, 6.5, 4.5, null, null, null, 0, castelo, yellowMaterial, elevatedPillarGeometry);
+wall(117, 6, -7.92, null, null, null, 0, castelo, material, pillarGeometry);
+wall(117, 6.5, 4.5, null, null, null, 0, castelo, material, elevatedPillarGeometry);
 
 function curvedPlatform(centerX, centerZ, startAngle, endAngle, height = 12) {
     const innerRadius = 4.4;
@@ -222,7 +213,7 @@ curvedPlatform(72, 20, degreesToRadians(282), degreesToRadians(348));
 curvedPlatform(72, -20, degreesToRadians(12), degreesToRadians(78));
 
 // sobe do teto da casa ate a passarela elevada do castelo
-ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "gray", castelo, material);
+ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "slategray", castelo, material);
 
 castelo.add(westWalls);
 
