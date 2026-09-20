@@ -4,7 +4,7 @@ import { restoreCamera, saveCamera } from "./controls/cameraStorage.js";
 import { createPlayerControls } from "./controls/playerControls.js";
 import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.js";
 import { criarArma } from "./models/gun.js";
-import { groundCollision, wallCollision } from "./mechanics/collision.js";
+import { groundCollision, jump, wallCollision } from "./mechanics/collision.js";
 import { atirar, atualizarProjeteis } from "./mechanics/shooting.js";
 import { createHud } from "./ui/hud.js";
 import { createWorld } from "./world/world.js";
@@ -45,6 +45,18 @@ window.addEventListener("keydown", (event) => {
   arma.visible = !enabled;
   hud.setCrosshairVisible(!enabled);
   hud.showBuildMode(enabled);
+});
+
+window.addEventListener("keydown", (event) => {
+  if (
+    event.code !== "Space" ||
+    event.repeat ||
+    !controls.isLocked ||
+    isInOrbitMode() ||
+    isBuildCameraEnabled()
+  ) return;
+
+  jump();
 });
 
 window.addEventListener("mousedown", () => {

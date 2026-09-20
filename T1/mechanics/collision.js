@@ -4,7 +4,9 @@ const raycaster = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
 
 let velocityY = 0;
+let isGrounded = false;
 const gravity = 20;
+const jumpVelocity = 12;
 const playerWidth = 0.6;
 const playerHeight = 4;
 const maximumStepHeight = 1.5;
@@ -12,6 +14,13 @@ const maximumGroundDrop = 1.5;
 const maximumMovementStep = playerWidth / 2;
 const minimumWallHeight = 1.1;
 const minimumSolidWalkableHeight = 2;
+
+export function jump() {
+  if (!isGrounded) return;
+
+  velocityY = jumpVelocity;
+  isGrounded = false;
+}
 
 export function createWallCollision(objects) {
   const colliders = [];
@@ -238,9 +247,13 @@ export function wallCollision(camera, lastPosition, colliders) {
 
 export function groundCollision(camera, floors, delta) {
   const viewHeight = 4;
+  const wasGrounded = isGrounded;
 
   velocityY -= gravity * delta;
   camera.position.y += velocityY * delta;
+  isGrounded = false;
+
+  if (velocityY > 0) return;
 
   const rayOrigin = camera.position.clone();
   rayOrigin.y += viewHeight + 0.5;
@@ -258,12 +271,13 @@ export function groundCollision(camera, floors, delta) {
   const heightDifference = groundHeight - camera.position.y;
   const canStepUp = heightDifference >= 0 &&
     heightDifference <= maximumStepHeight;
-  const canFollowRampDown = heightDifference < 0 &&
+  const canFollowRampDown = wasGrounded && heightDifference < 0 &&
     Math.abs(heightDifference) <= maximumGroundDrop;
 
   if (canStepUp || canFollowRampDown) {
     camera.position.y = groundHeight;
     velocityY = 0;
+    isGrounded = true;
   }
 }
 

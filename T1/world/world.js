@@ -22,7 +22,7 @@ export function createWorld() {
 
   scene.add(new THREE.AxesHelper(12));
 
-  const ground = createGroundPlaneXZ(1000, 1000);
+  const ground = createGroundPlaneXZ(800, 800, 1, 1, "grass");
   ground.userData.walkable = true;
   scene.add(ground, castelo, tallHouse, shortHouse);
 
