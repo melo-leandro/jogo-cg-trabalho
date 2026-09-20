@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { setDefaultMaterial, degreesToRadians } from "../libs/util/util.js";
 import { wall, floor, ramp, ZF } from "./tools.js";
+import { createDoubleDoor } from "./doors.js";
 
 
 const shortHouse = new THREE.Group();
@@ -40,10 +41,14 @@ const doorFrameGeometry = new THREE.ExtrudeGeometry(doorFrameShape, {
 });
 doorFrameGeometry.translate(0, 0, -0.5);
 
-const doorFrame = new THREE.Mesh(doorFrameGeometry, woodMaterial);
+const doorFrame = new THREE.Mesh(doorFrameGeometry, wallMaterial);
 doorFrame.position.set(156, 0, -7.5);
 doorFrame.rotation.y = degreesToRadians(90);
 shortHouse.add(doorFrame);
+
+const { group: shortHouseDoor, doors: shortHouseDoors } = createDoubleDoor(4, 5.5, -1);
+shortHouseDoor.position.set(156, 0, -7.5);
+shortHouse.add(shortHouseDoor);
 
 // ACESSO AO ANDAR SUPERIOR
 ramp(166.5, 1, -7, 16, 10, 4, degreesToRadians(90), "saddlebrown", shortHouse, woodMaterial); // rampa de acesso
@@ -65,4 +70,4 @@ ramp(153.76, 11, -24.5, 10.5, 7, 4, degreesToRadians(180), "saddlebrown", shortH
 
 shortHouse.scale.setScalar(2);
 
-export { shortHouse };
+export { shortHouse, shortHouseDoors };

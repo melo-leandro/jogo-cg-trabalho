@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
 import { floor, ramp, wall, ZF } from "./tools.js";
+import { frontDoor } from "./doors.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("slategray");
@@ -349,5 +350,6 @@ createSmallCrown(119, 15); // 7
 createSmallCrown(119, 4); // 8
 
 castelo.scale.setScalar(3);
+castelo.add(frontDoor);
 
 export { castelo };
