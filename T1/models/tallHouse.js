@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {setDefaultMaterial, degreesToRadians} from "../libs/util/util.js";
 import { ZF, wall, floor, ramp } from "./tools.js";
-import { createDoubleDoor } from "./doors.js";
+import { createSingleDoor } from "./doors.js";
 
 let tallHouse = new THREE.Group();
 
@@ -52,7 +52,7 @@ wall(171.72, 2.5, 14.55, null, null, null, degreesToRadians(166), tallHouse, woo
 
 ramp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial); // rampa da porta
 
-const { group: tallHouseDoor, doors: tallHouseDoors } = createDoubleDoor(3, 3.5, 1);
+const { group: tallHouseDoor, doors: tallHouseDoors } = createSingleDoor(3, 3.5, -1);
 tallHouseDoor.position.set(154.558, 0.5, 14.89); // valores para porta no meio 155, 0.5, 15
 tallHouseDoor.rotation.y = degreesToRadians(166);
 tallHouse.add(tallHouseDoor);

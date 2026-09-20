@@ -40,6 +40,24 @@ export function createDoubleDoor(width, height, handleSide) {
     };
 }
 
+export function createSingleDoor(width, height, handleSide) {
+    const doorGeometry = new THREE.BoxGeometry(0.1, height, width);
+    doorGeometry.translate(0, height / 2, width / 2);
+
+    const door = new THREE.Mesh(doorGeometry, doorMaterial);
+    door.userData.dynamicCollider = true;
+    door.position.z = -width / 2;
+    addHandle(door, handleSide * 0.05, height / 2, width - 0.3, handleSide);
+
+    const group = new THREE.Group();
+    group.add(door);
+
+    return {
+        group,
+        doors: [[door, handleSide * Math.PI / 2, 0.12]]
+    };
+}
+
 const doorShape = new THREE.Shape();
 doorShape.moveTo(0, 0);
 doorShape.lineTo(1.5, 0);
