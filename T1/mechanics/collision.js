@@ -2,18 +2,16 @@ import * as THREE from "three";
 
 const raycaster = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
+const wallRayHeights = [-2.45, -1.95, -1.45, -0.95, -0.45, -0.05];
+const wallRayOffsets = [-0.6, 0, 0.6];
 
 let velocityY = 0;
 let isGrounded = false;
-const gravity = 20;
+const gravity = 30;
 const jumpVelocity = 12;
 const playerWidth = 0.6;
-const playerHeight = 4;
 const maximumStepHeight = 1.5;
 const maximumGroundDrop = 1.5;
-const maximumMovementStep = playerWidth / 2;
-const minimumWallHeight = 1.1;
-const minimumSolidWalkableHeight = 2;
 
 export function jump() {
   if (!isGrounded) return;
@@ -23,226 +21,92 @@ export function jump() {
 }
 
 export function createWallCollision(objects) {
-  const colliders = [];
+  const meshes = [];
 
   for (const object of objects) {
     object.updateWorldMatrix(true, true);
-
     object.traverse((child) => {
       if (!child.isMesh || child.userData.ignoreCollision) return;
 
-      child.updateWorldMatrix(true, false);
-      const worldBox = new THREE.Box3().setFromObject(child);
-      if (worldBox.max.y - worldBox.min.y < minimumWallHeight) return;
-
-      child.geometry.computeBoundingBox();
-
-      const localBox = child.geometry.boundingBox.clone();
-      const inverseMatrix = child.matrixWorld.clone().invert();
-      const scale = child.getWorldScale(new THREE.Vector3());
-      const localPoint = new THREE.Vector3();
-      const isDynamic = child.userData.dynamicCollider === true;
-      const isCylinder = child.geometry.type === "CylinderGeometry";
-      const isRamp =
-        child.userData.walkable === true &&
-        child.geometry.type === "ExtrudeGeometry" &&
-        child.userData.curvedPlatform !== true;
-      const shape = child.geometry.type === "ExtrudeGeometry" &&
-        child.userData.curvedPlatform !== true
-        ? child.geometry.parameters.shapes
-        : null;
-      let cylinderRadius = 0;
-      const worldCylinderCenter = new THREE.Vector3();
-      let worldCylinderRadius = 0;
-
-      if (isCylinder) {
-        cylinderRadius = Math.max(
-          child.geometry.parameters.radiusTop,
-          child.geometry.parameters.radiusBottom
-        );
-        worldCylinderCenter.setFromMatrixPosition(child.matrixWorld);
-        worldCylinderRadius = cylinderRadius * Math.max(
-          Math.abs(scale.x),
-          Math.abs(scale.z)
-        );
-      }
-
-      colliders.push({
-        isDynamic,
-        blocksMovement: !child.userData.walkable || isRamp,
-
-        update() {
-          child.updateWorldMatrix(true, false);
-          inverseMatrix.copy(child.matrixWorld).invert();
-        },
-
-        containsPoint(point) {
-          if (isDynamic) this.update();
-          localPoint.copy(point).applyMatrix4(inverseMatrix);
-
-          if (shape) {
-            return pointIsInsideExtrusion(localPoint, localBox, shape);
-          }
-
-          if (isCylinder) {
-            const insideHeight =
-              localPoint.y >= localBox.min.y && localPoint.y <= localBox.max.y;
-            const horizontalDistance = Math.hypot(
-              point.x - worldCylinderCenter.x,
-              point.z - worldCylinderCenter.z
-            );
-            return insideHeight && horizontalDistance <= worldCylinderRadius;
-          }
-
-          return localBox.containsPoint(localPoint);
-        },
-
-        intersectsPlayer(position) {
-          const playerBottom = position.y - playerHeight;
-          const playerTop = position.y;
-          const overlapsVertically =
-            worldBox.max.y - maximumStepHeight > playerBottom &&
-            worldBox.min.y < playerTop;
-
-          if (!overlapsVertically) return false;
-
-          localPoint.copy(position).applyMatrix4(inverseMatrix);
-
-          if (shape) {
-            const radius = playerWidth / Math.max(
-              Math.abs(scale.x),
-              Math.abs(scale.z)
-            );
-            return [
-              localPoint.x - radius,
-              localPoint.x,
-              localPoint.x + radius
-            ].some((x) => pointIsInsideExtrusion(
-              new THREE.Vector3(x, localPoint.y, localPoint.z),
-              localBox,
-              shape,
-              radius
-            ));
-          }
-
-          if (isCylinder) {
-            const horizontalDistance = Math.hypot(
-              position.x - worldCylinderCenter.x,
-              position.z - worldCylinderCenter.z
-            );
-            return horizontalDistance <= worldCylinderRadius + playerWidth;
-          }
-
-          const radiusX = playerWidth / Math.abs(scale.x);
-          const radiusZ = playerWidth / Math.abs(scale.z);
-
-          return localPoint.x + radiusX >= localBox.min.x &&
-            localPoint.x - radiusX <= localBox.max.x &&
-            localPoint.z + radiusZ >= localBox.min.z &&
-            localPoint.z - radiusZ <= localBox.max.z;
-        }
-      });
+      meshes.push(child);
     });
   }
 
-  return colliders;
+  return meshes;
 }
 
-function isSolidWalkableBlock(box, walkable) {
-  return walkable === true && box.max.y - box.min.y > minimumSolidWalkableHeight;
-}
-
-function pointIsInsideExtrusion(point, box, shape, margin = 0) {
-  if (point.z < box.min.z - margin || point.z > box.max.z + margin) {
-    return false;
-  }
-
-  const shapes = Array.isArray(shape) ? shape : [shape];
-  return shapes.some((currentShape) => {
-    if (!pointIsInsidePolygon(point.x, point.y, currentShape.getPoints())) {
-      return false;
+function updateDynamicColliders(colliders) {
+  for (const collider of colliders) {
+    if (collider.userData.dynamicCollider) {
+      collider.updateWorldMatrix(true, false);
     }
-
-    return !currentShape.holes.some((hole) =>
-      pointIsInsidePolygon(point.x, point.y, hole.getPoints())
-    );
-  });
-}
-
-function pointIsInsidePolygon(x, y, points) {
-  let inside = false;
-
-  for (let index = 0, previous = points.length - 1;
-    index < points.length;
-    previous = index++) {
-    const current = points[index];
-    const previousPoint = points[previous];
-    const crosses = (current.y > y) !== (previousPoint.y > y) &&
-      x < (previousPoint.x - current.x) *
-        (y - current.y) /
-        (previousPoint.y - current.y) + current.x;
-
-    if (crosses) inside = !inside;
   }
-
-  return inside;
 }
 
-function isColliding(position, colliders) {
-  return colliders.some(
-    (collider) => collider.blocksMovement && collider.intersectsPlayer(position)
-  );
-}
+function findWallHit(position, direction, distance, colliders) {
+  const side = new THREE.Vector3(-direction.z, 0, direction.x);
+  const origin = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+  let nearest = null;
 
-function moveWithWallSlide(position, movement, colliders) {
-  if (movement.lengthSq() === 0) return;
+  raycaster.far = distance + playerWidth;
 
-  const direction = Math.atan2(movement.z, movement.x);
-  const candidate = position.clone();
-  let bestScore = -Infinity;
-  let bestAngle = 0;
-  const samples = 32;
+  for (const height of wallRayHeights) {
+    for (const offset of wallRayOffsets) {
+      origin.copy(position).addScaledVector(side, offset);
+      origin.y += height;
+      raycaster.set(origin, direction);
 
-  for (let sample = 0; sample < samples; sample++) {
-    const angle = direction + sample * Math.PI * 2 / samples;
-    candidate.x = position.x + Math.cos(angle) * movement.length();
-    candidate.z = position.z + Math.sin(angle) * movement.length();
+      for (const hit of raycaster.intersectObjects(colliders, false)) {
+        normal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld);
 
-    if (!isColliding(candidate, colliders)) {
-      const score = Math.cos(angle - direction);
-      if (score > bestScore) {
-        bestScore = score;
-        bestAngle = angle;
+        // ponytail: horizontal rays ignore floors and ramp tops; their sides still block.
+        if (Math.abs(normal.y) >= 0.5 || normal.dot(direction) >= 0) continue;
+        if (!nearest || hit.distance < nearest.distance) {
+          nearest = { distance: hit.distance, normal: normal.clone() };
+        }
+        break;
       }
     }
   }
 
-  if (bestScore > -Infinity) {
-    position.x += Math.cos(bestAngle) * movement.length();
-    position.z += Math.sin(bestAngle) * movement.length();
+  return nearest;
+}
+
+function moveWithWallSlide(position, movement, colliders) {
+  const remaining = movement.clone();
+
+  for (let attempt = 0; attempt < 2 && remaining.lengthSq() > 0; attempt++) {
+    const distance = remaining.length();
+    const direction = remaining.clone().normalize();
+    const hit = findWallHit(position, direction, distance, colliders);
+
+    if (!hit) {
+      position.add(remaining);
+      return;
+    }
+
+    const travel = Math.min(distance, Math.max(0, hit.distance - playerWidth));
+    position.addScaledVector(direction, travel);
+    remaining.copy(direction).multiplyScalar(distance - travel);
+    hit.normal.y = 0;
+    hit.normal.normalize();
+    remaining.addScaledVector(hit.normal, -remaining.dot(hit.normal));
   }
 }
 
 export function wallCollision(camera, lastPosition, colliders) {
-  for (const collider of colliders) {
-    if (collider.isDynamic) collider.update();
-  }
+  updateDynamicColliders(colliders);
 
-  const movementX = camera.position.x - lastPosition.x;
-  const movementZ = camera.position.z - lastPosition.z;
-  const steps = Math.max(
-    1,
-    Math.ceil(Math.max(Math.abs(movementX), Math.abs(movementZ)) / maximumMovementStep)
+  const movement = new THREE.Vector3(
+    camera.position.x - lastPosition.x,
+    0,
+    camera.position.z - lastPosition.z
   );
-  const stepMovement = new THREE.Vector3();
 
   camera.position.x = lastPosition.x;
   camera.position.z = lastPosition.z;
-
-  for (let step = 0; step < steps; step++) {
-    stepMovement.set(movementX / steps, 0, movementZ / steps);
-    moveWithWallSlide(camera.position, stepMovement, colliders);
-  }
+  moveWithWallSlide(camera.position, movement, colliders);
 }
 
 export function groundCollision(camera, floors, delta) {
@@ -253,22 +117,26 @@ export function groundCollision(camera, floors, delta) {
   camera.position.y += velocityY * delta;
   isGrounded = false;
 
-  if (velocityY > 0) return;
-
   const rayOrigin = camera.position.clone();
   rayOrigin.y += viewHeight + 0.5;
   raycaster.set(rayOrigin, down);
+  raycaster.far = Infinity;
 
   const intersections = raycaster
     .intersectObjects(floors, true)
-    .filter(({ object, point }) =>
-      (object.userData.walkable === true || object.userData.ground === true) &&
-      point.y <= camera.position.y + maximumStepHeight
-    );
+    .filter(({ point }) => point.y <= camera.position.y + maximumStepHeight);
   if (intersections.length === 0) return;
 
   const groundHeight = intersections[0].point.y + viewHeight;
   const heightDifference = groundHeight - camera.position.y;
+
+  if (velocityY > 0) {
+    if (heightDifference > 0 && heightDifference <= maximumStepHeight) {
+      camera.position.y = groundHeight;
+    }
+    return;
+  }
+
   const canStepUp = heightDifference >= 0 &&
     heightDifference <= maximumStepHeight;
   const canFollowRampDown = wasGrounded && heightDifference < 0 &&
@@ -281,6 +149,9 @@ export function groundCollision(camera, floors, delta) {
   }
 }
 
-export function pontoColideComAlgum(point, colliders) {
-  return colliders.some((collider) => collider.containsPoint(point));
+export function rayIntersectsColliders(origin, direction, distance, colliders) {
+  updateDynamicColliders(colliders);
+  raycaster.set(origin, direction);
+  raycaster.far = distance;
+  return raycaster.intersectObjects(colliders, false).length > 0;
 }

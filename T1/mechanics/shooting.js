@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { setDefaultMaterial } from "../libs/util/util.js";
-import { pontoColideComAlgum } from "./collision.js";
+import { rayIntersectsColliders } from "./collision.js";
 
 const VEL_PROJETIL = 100;
 const DIST_MAX = 100;
@@ -38,10 +38,14 @@ export function atualizarProjeteis(delta, scene, wallCollisions) {
 
         const passo = VEL_PROJETIL * delta;
 
+        const bateuNaParede = rayIntersectsColliders(
+            p.mesh.position,
+            p.direcao,
+            passo,
+            wallCollisions
+        );
         p.mesh.position.addScaledVector(p.direcao, passo);
         p.distanciaPercorrida += passo;
-
-        const bateuNaParede = pontoColideComAlgum(p.mesh.position, wallCollisions);
         const passouDistancia = p.distanciaPercorrida > DIST_MAX;
 
         if (bateuNaParede || passouDistancia) {
