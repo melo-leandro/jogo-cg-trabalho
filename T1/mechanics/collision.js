@@ -19,7 +19,7 @@ export function createWallCollision(objects) {
     object.updateWorldMatrix(true, true);
 
     object.traverse((child) => {
-      if (!child.isMesh) return;
+      if (!child.isMesh || child.userData.ignoreCollision) return;
 
       child.updateWorldMatrix(true, false);
       const worldBox = new THREE.Box3().setFromObject(child);
@@ -31,6 +31,7 @@ export function createWallCollision(objects) {
       const inverseMatrix = child.matrixWorld.clone().invert();
       const scale = child.getWorldScale(new THREE.Vector3());
       const localPoint = new THREE.Vector3();
+      const isDynamic = child.userData.dynamicCollider === true;
       const isCylinder = child.geometry.type === "CylinderGeometry";
       const isRamp =
         child.userData.walkable === true &&
@@ -53,9 +54,16 @@ export function createWallCollision(objects) {
       }
 
       colliders.push({
+        isDynamic,
         blocksMovement: !child.userData.walkable || isRamp,
 
+        update() {
+          child.updateWorldMatrix(true, false);
+          inverseMatrix.copy(child.matrixWorld).invert();
+        },
+
         containsPoint(point) {
+          if (isDynamic) this.update();
           localPoint.copy(point).applyMatrix4(inverseMatrix);
 
           if (isCylinder) {
@@ -169,6 +177,10 @@ function moveWithWallSlide(position, movement, colliders) {
 }
 
 export function wallCollision(camera, lastPosition, colliders) {
+  for (const collider of colliders) {
+    if (collider.isDynamic) collider.update();
+  }
+
   const movementX = camera.position.x - lastPosition.x;
   const movementZ = camera.position.z - lastPosition.z;
   const steps = Math.max(
