@@ -107,8 +107,8 @@ function render() {
   activeDoor = doorInteraction(doorGroups, camera);
 
   for (const doorGroup of doorGroups) {
-    for (const [door, openRotation] of doorGroup.doors) {
-      doorLerping(door, doorGroup.isOpen ? openRotation : 0, 0.05);
+    for (const [door, openRotation, animationSpeed = 0.05] of doorGroup.doors) {
+      doorLerping(door, doorGroup.isOpen ? openRotation : 0, animationSpeed);
     }
   }
 

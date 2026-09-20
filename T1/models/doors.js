@@ -23,6 +23,7 @@ export function createDoubleDoor(width, height, handleSide) {
     rightDoor.userData.dynamicCollider = true;
     rightDoor.position.z = -width / 2;
     addHandle(rightDoor, handleSide * 0.05, height / 2, leafWidth - 0.3, handleSide);
+    addHandle(rightDoor, -handleSide * 0.05, height / 2, leafWidth - 0.3, -handleSide);
 
     const leftDoor = rightDoor.clone();
     leftDoor.scale.z = -1;
@@ -37,6 +38,25 @@ export function createDoubleDoor(width, height, handleSide) {
             [leftDoor, handleSide * Math.PI / 2],
             [rightDoor, -handleSide * Math.PI / 2]
         ]
+    };
+}
+
+export function createSingleDoor(width, height, handleSide) {
+    const doorGeometry = new THREE.BoxGeometry(0.1, height, width);
+    doorGeometry.translate(0, height / 2, width / 2);
+
+    const door = new THREE.Mesh(doorGeometry, doorMaterial);
+    door.userData.dynamicCollider = true;
+    door.position.z = -width / 2;
+    addHandle(door, handleSide * 0.05, height / 2, width - 0.18, handleSide);
+    addHandle(door, -handleSide * 0.05, height / 2, width - 0.18, -handleSide);
+
+    const group = new THREE.Group();
+    group.add(door);
+
+    return {
+        group,
+        doors: [[door, handleSide * Math.PI / 2, 0.12]]
     };
 }
 
@@ -58,6 +78,7 @@ const rightDoor = new THREE.Mesh(doorGeometry, doorMaterial);
 rightDoor.userData.dynamicCollider = true;
 rightDoor.position.set(71.6, 0, -1.5);
 addHandle(rightDoor, -0.1, 1.5, 1.2, -1);
+addHandle(rightDoor, 0, 1.5, 1.2, 1);
 
 const leftDoor = rightDoor.clone();
 leftDoor.scale.z = -1;
