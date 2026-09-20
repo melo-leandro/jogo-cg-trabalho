@@ -4,7 +4,7 @@ import { floor, ramp, wall, ZF } from "./tools.js";
 import { frontDoor } from "./doors.js";
 
 let castelo = new THREE.Group();
-let material = setDefaultMaterial("slategray");
+let material = setDefaultMaterial("#65645D");
 material.side = THREE.DoubleSide;
 
 // TORRES

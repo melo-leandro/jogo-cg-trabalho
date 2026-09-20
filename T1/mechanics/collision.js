@@ -60,7 +60,6 @@ function findWallHit(position, direction, distance, colliders) {
       for (const hit of raycaster.intersectObjects(colliders, false)) {
         normal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld);
 
-        // ponytail: horizontal rays ignore floors and ramp tops; their sides still block.
         if (Math.abs(normal.y) >= 0.5 || normal.dot(direction) >= 0) continue;
         if (!nearest || hit.distance < nearest.distance) {
           nearest = { distance: hit.distance, normal: normal.clone() };
