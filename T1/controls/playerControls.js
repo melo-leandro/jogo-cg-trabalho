@@ -23,8 +23,8 @@ export function createPlayerControls(camera, domElement, canLock, canFly) {
     if (keys.has("KeyA") || keys.has("ArrowLeft")) controls.moveRight(-distance);
 
     if (isFlying) {
-      if (keys.has("KeyQ")) camera.position.y += distance;
-      if (keys.has("KeyE")) camera.position.y -= distance;
+      if (keys.has("KeyQ")) camera.position.y -= distance;
+      if (keys.has("KeyE")) camera.position.y += distance;
     }
   }
 
