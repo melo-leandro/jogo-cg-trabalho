@@ -6,7 +6,8 @@ import {
   onWindowResize
 } from "../libs/util/util.js";
 import { castelo } from "../models/castle.js";
-import { smallHouse } from "../models/smallHouse.js";
+import { tallHouse } from "../models/tallHouse.js";
+import { shortHouse } from "../models/shortHouse.js";
 import { createWallCollision } from "../mechanics/collision.js";
 
 export function createWorld() {
@@ -23,7 +24,7 @@ export function createWorld() {
 
   const ground = createGroundPlaneXZ(1000, 1000);
   ground.userData.walkable = true;
-  scene.add(ground, castelo, smallHouse);
+  scene.add(ground, castelo, tallHouse, shortHouse);
 
   window.addEventListener("resize", () => onWindowResize(camera, renderer));
 
@@ -31,7 +32,7 @@ export function createWorld() {
     scene,
     renderer,
     camera,
-    grounds: [ground, smallHouse, castelo],
-    wallCollisions: createWallCollision([castelo, smallHouse])
+    grounds: [ground, tallHouse, castelo, shortHouse],
+    wallCollisions: createWallCollision([castelo, tallHouse, shortHouse])
   };
 }
