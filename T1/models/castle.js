@@ -24,7 +24,25 @@ cylinderTower(72.0, 20.0); // sudeste
 
 //COROAS DAS TORRES CILINDRICAS
 
-let crownBaseGeometry = new THREE.CircleGeometry(5, 256);
+let crownBaseGeometry = new THREE.CircleGeometry(4.5, 256);
+
+function crownToothGeometry(radius, height, thetaStart, thetaLength, thickness) {
+    const startAngle = Math.PI / 2 - thetaStart;
+    const endAngle = startAngle - thetaLength;
+    const shape = new THREE.Shape();
+    shape.absarc(0, 0, radius, startAngle, endAngle, true);
+    shape.absarc(0, 0, radius - thickness, endAngle, startAngle);
+    shape.closePath();
+
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+        depth: height,
+        bevelEnabled: false,
+        curveSegments: 8
+    });
+    geometry.rotateX(Math.PI / 2);
+    geometry.translate(0, height / 2, 0);
+    return geometry;
+}
 
 function crown(x, z) {
     let crownBase = new THREE.Mesh(crownBaseGeometry, material);
@@ -36,7 +54,7 @@ function crown(x, z) {
     //secciona o topo da
     for(let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 4) {
         // aqui o último número diminui a circunferencia do cilindro (theta)
-        let crownGeometry = new THREE.CylinderGeometry(5, 5, 1.8, 32, 1, true, thetaStart, 0.5);
+        let crownGeometry = crownToothGeometry(4.5, 1.8, thetaStart, 0.5, 0.6);
         let crown = new THREE.Mesh(crownGeometry, material);
         crown.position.set(x, 18.9, z);
         castelo.add(crown);
@@ -96,6 +114,48 @@ let fourthWestWallGeometry = new THREE.BoxGeometry(24, 12, 2);
 let fourthWestWall = new THREE.Mesh(fourthWestWallGeometry, material);
 fourthWestWall.position.set(104, 6, -20);
 westWalls.add(fourthWestWall);
+
+const blockShape = new THREE.BoxGeometry(2, 2.5, 0.7);
+const towerBlockShape = new THREE.BoxGeometry(1, 1.8, 0.7);
+
+function addTopBlocks(centerX, centerZ, length, axis, height, blockLength = 2, shape = blockShape, gap = 1.5) {
+    const spacing = blockLength + gap;
+    const count = Math.floor(length / spacing);
+    const alongX = axis === 'x';
+    for (let index = 0; index < count; index++) {
+        const offset = (index - (count - 1) / 2) * spacing;
+        wall(
+            centerX + (alongX ? offset : 0), height, centerZ + (alongX ? 0 : offset),
+            null, null, null, alongX ? 0 : Math.PI / 2, castelo, material, shape
+        );
+    }
+}
+
+// blocos dos muros
+addTopBlocks(71, 10, 16, 'z', 12.25);   // frente
+addTopBlocks(71, -10, 16, 'z', 12.25);  // frente
+addTopBlocks(120, 0, 40, 'z', 12.25);   // fundo
+addTopBlocks(95.5, 21, 40, 'x', 12.25); // direita
+addTopBlocks(104, -21, 24, 'x', 12.25); // esquerda (trecho longo)
+addTopBlocks(86, -23, 10, 'x', 12.25);  // esquerda (trecho curto)
+
+// blocos do bloco frontal
+addTopBlocks(71.5, 9.65, 3, 'x', 17.9, 1, towerBlockShape, 0.6); // lado externo
+addTopBlocks(70.35, 8.25, 3.5, 'z', 17.9, 1, towerBlockShape, 0.6); // frente do retângulo
+addTopBlocks(69, 6.15, 2, 'x', 17.9, 1, towerBlockShape, 0.6); // degrau quadrado/retângulo
+addTopBlocks(68.35, 4.5, 4, 'z', 17.9, 1, towerBlockShape, 0.6); // frente do quadrado
+addTopBlocks(69.5, 2.85, 3, 'x', 17.9, 1, towerBlockShape, 0.6); // degrau quadrado/entrada
+addTopBlocks(72.65, 7, 6, 'z', 17.9, 1, towerBlockShape, 0.6); // ombro traseiro
+addTopBlocks(76, 3.65, 6, 'x', 17.9, 1, towerBlockShape, 0.6); // lateral da entrada
+addTopBlocks(71.5, -9.65, 3, 'x', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(70.35, -8.25, 3.5, 'z', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(69, -6.15, 2, 'x', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(68.35, -4.5, 4, 'z', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(69.5, -2.85, 3, 'x', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(72.65, -7, 6, 'z', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(76, -3.65, 6, 'x', 17.9, 1, towerBlockShape, 0.6);
+addTopBlocks(71.35, 0, 4, 'z', 17.9, 1, towerBlockShape, 0.6); // frente da entrada (centro)
+addTopBlocks(78.65, 0, 8, 'z', 17.9, 1, towerBlockShape, 0.6); // fundo da entrada (centro)
 
 // -> PASSARELA
 
@@ -214,7 +274,7 @@ curvedPlatform(72, 20, degreesToRadians(282), degreesToRadians(348));
 curvedPlatform(72, -20, degreesToRadians(12), degreesToRadians(78));
 
 // sobe do teto da casa ate a passarela elevada do castelo
-ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "slategray", castelo, material);
+ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "slategray", castelo, material, 2);
 
 castelo.add(westWalls);
 
@@ -304,6 +364,20 @@ createMiddleTower(95, -21.5); // Oeste
 createMiddleTower(95, 21.5); // Leste
 createMiddleTower(120.5, 0, 90); // Traseira
 
+// ameias no topo das torres quadradas (topo em y=18; 8x5, traseira rotacionada 90°)
+addTopBlocks(95, -23.65, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(95, -19.65, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(91.35, -21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(98.65, -21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(95, 19.35, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(95, 23.65, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(91.35, 21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(98.65, 21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(120.5, -3.65, 5, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(120.5, 3.65, 5, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(118.35, 0, 8, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(122.65, 0, 8, 'z', 17.9, 1, towerBlockShape);
+
 // TORRES PEQUENAS ADJACENTES
 let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
 
@@ -323,7 +397,7 @@ createSmallTower(119, 15); // TorreCilindricaNE
 createSmallTower(119, 4); // TorreTraseira
 
 //COROAS DAS TORRES PEQUENAS ADJACENTES
-let smallCrownBaseGeometry = new THREE.CircleGeometry(1.2, 256);
+let smallCrownBaseGeometry = new THREE.CircleGeometry(1, 256);
 
 function createSmallCrown(x, z) {
     let smallCrownBase = new THREE.Mesh(smallCrownBaseGeometry, material);
@@ -333,7 +407,7 @@ function createSmallCrown(x, z) {
 
 
     for (let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 2) {
-        let smallCrownGeometry = new THREE.CylinderGeometry(1.2, 1.2, 1, 32, 1, true, thetaStart, 1);
+        let smallCrownGeometry = crownToothGeometry(1, 1, thetaStart, 1, 0.25);
         let smallCrown = new THREE.Mesh(smallCrownGeometry, material);
         smallCrown.position.set(x, 20.5, z);
         castelo.add(smallCrown);
