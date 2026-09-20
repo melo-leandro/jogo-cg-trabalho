@@ -36,7 +36,7 @@ wall(155, 16, 15, 1, 4, 4, degreesToRadians(166), tallHouse, wallMaterial);
 
 // PISOS + TELHADO
 
-floor(164.17, 0.25, 17.5, 20, 0.5, 16, degreesToRadians(166), tallHouse, floorMaterial); // chao
+floor(164.17, 0.25, 17.5, 20 - 5 * ZF, 0.5 - 5 * ZF, 16 - 5 * ZF, degreesToRadians(166), tallHouse, floorMaterial); // chao
 floor(162.25, 8.75, 17.01, 17, 0.5, 17, degreesToRadians(166), tallHouse, floorMaterial); // primeiro andar
 floor(164.17, 18.25, 17.5, 21, 0.5, 17, degreesToRadians(166), tallHouse, floorMaterial); // telhado
 

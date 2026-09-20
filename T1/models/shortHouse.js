@@ -61,14 +61,14 @@ ramp(166.5, 1, -7, 16, 10, 4, degreesToRadians(90), "saddlebrown", shortHouse, w
 floor(168.5, 5.5, -25.25, 4, 11, 4.5, degreesToRadians(0), shortHouse, woodMaterial); // apoio
 
 // ANDAR SUPERIOR
-floor(151.5, 10.501, -15.5, 30, 1, 26, degreesToRadians(0), shortHouse, floorMaterial); // piso do andar superior/teto do térreo
+floor(151.5, 10.501 + ZF, -15.5, 30, 1, 26, degreesToRadians(0), shortHouse, floorMaterial); // piso do andar superior/teto do térreo
 
 // COBERTURA DA ESCADA
 const coverSmallWallGeometry = new THREE.BoxGeometry(6, 7, 1);
 wall(168.5, 13.5, -3, null, null, null, degreesToRadians(0), shortHouse, wallMaterial, coverSmallWallGeometry); // parede pequena longe do topo da escada
 wall(168.5, 13.5, -28, null, null, null, degreesToRadians(0), shortHouse, wallMaterial, coverSmallWallGeometry); // parede pequena perto do topo da escada
 wall(166, 13.5, -12.75, 20.5, 7, 1, degreesToRadians(90), shortHouse, wallMaterial); // parede do lado de dentro
-floor(168.5, 16.5, -15.5, 6, 1, 26, degreesToRadians(0), shortHouse, roofMaterial); // laje
+floor(168.5, 16.5, -15.5, 6 + 2 * ZF, 1 + 2 * ZF, 26 + 2 * ZF, degreesToRadians(0), shortHouse, roofMaterial); // laje
 
 // RAMPA DE ACESSO A PLATAFORMA SUPERIOR
 ramp(153.76, 11, -24.5, 10.5, 7, 4, degreesToRadians(180), null, shortHouse, concreteMaterial, 12); // rampa de acesso a plataforma superior

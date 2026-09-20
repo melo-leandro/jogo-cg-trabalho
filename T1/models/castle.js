@@ -163,8 +163,8 @@ addTopBlocks(78.65, 0, 8, 'z', 17.9, 1, towerBlockShape, 0.6); // fundo da entra
 
 const frontPlatformGeometry = new THREE.BoxGeometry(2 + 2 * ZF, 0.5, 12 + 2 * ZF);
 const entrancePlatformGeometry = new THREE.BoxGeometry(6.5 + 2 * ZF, 0.5, 2.5 + 2 * ZF);
-const pillarGeometry = new THREE.BoxGeometry(1, 12, 1);
-const elevatedPillarGeometry = new THREE.BoxGeometry(1, 13, 1);
+const pillarGeometry = new THREE.BoxGeometry(1, 12 - 2 * ZF, 1);
+const elevatedPillarGeometry = new THREE.BoxGeometry(1, 13 - 2 * ZF, 1);
 const pillarMaterial = setDefaultMaterial("#7d7c74"); // um pouco mais claro que o muro
 pillarMaterial.side = THREE.DoubleSide;
 

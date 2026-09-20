@@ -5,7 +5,7 @@ import { setDefaultMaterial } from "../libs/util/util.js";
 // quando duas estruturas estão com exatamente a mesma posição
 // elas ficam meio que se alternando, ficando bem estranho
 // esse offset resolve
-export const ZF = 0.01;
+export const ZF = 0.02;
 
 export function wall(x, y, z, width, height, depth, rotationY, group, material = null, geometry = null) {
     validateGeometry(geometry, [width, height, depth]);

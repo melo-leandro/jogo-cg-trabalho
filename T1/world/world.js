@@ -12,6 +12,7 @@ import { createWallCollision } from "../mechanics/collision.js";
 
 export function createWorld() {
   const scene = new THREE.Scene();
+  const castleCenterX = 286.5;
   const renderer = initRenderer("rgb(135, 206, 235)");
   const sun = initDefaultBasicLight(
     scene,
@@ -26,15 +27,18 @@ export function createWorld() {
   sun.shadow.normalBias = 0.3;
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(120, 4, 0);
-  camera.lookAt(new THREE.Vector3(225, 25, 0));
+  camera.position.set(120 - castleCenterX, 4, 0);
+  camera.lookAt(new THREE.Vector3(225 - castleCenterX, 25, 0));
   scene.add(camera);
 
   scene.add(new THREE.AxesHelper(12));
 
-  const ground = createGroundPlaneXZ(800, 800, 1, 1, "#328248");
+  const ground = createGroundPlaneXZ(400, 400, 1, 1, "#328248");
   ground.userData.walkable = true;
-  scene.add(ground, castelo, tallHouse, shortHouse);
+  const castleArea = new THREE.Group();
+  castleArea.position.x = -castleCenterX;
+  castleArea.add(castelo, tallHouse, shortHouse);
+  scene.add(ground, castleArea);
   scene.traverse((object) => {
     if (!object.isMesh) return;
     object.castShadow = true;

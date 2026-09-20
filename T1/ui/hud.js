@@ -14,6 +14,25 @@ export function createHud(camera) {
   });
   document.body.appendChild(crosshair);
 
+  // infobox fixo com os comandos
+  const controlsBox = new InfoBox();
+  controlsBox.infoBox.style.removeProperty("bottom");
+  Object.assign(controlsBox.infoBox.style, {
+    top: "10px",
+    right: "10px",
+    left: "auto",
+    fontSize: "14px",
+    opacity: "0.8"
+  });
+  controlsBox.add("Mover: WASD / Setas");
+  controlsBox.add("Olhar: Mouse");
+  controlsBox.add("Correr: Shift");
+  controlsBox.add("Pular: Espaço");
+  controlsBox.add("Atirar: Clique esquerdo/direito");
+  controlsBox.add("Câmera orbital: C");
+  controlsBox.add("Modo construção: B");
+  controlsBox.show();
+
   const cameraModeInfoBox = new InfoBox();
 
   // infobox do modo de construção

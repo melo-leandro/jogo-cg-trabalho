@@ -32,6 +32,7 @@ window.addEventListener("keydown", (event) => {
 
   toggleOrbit(camera, renderer, controls);
   arma.visible = !isInOrbitMode();
+  hud.setCrosshairVisible(!isInOrbitMode());
   hud.showCameraMode(isInOrbitMode());
 });
 

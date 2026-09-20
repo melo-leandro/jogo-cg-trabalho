@@ -5,7 +5,7 @@ let isOrbiting = false;
 let orbitControls = null;
 let savedPosition = new THREE.Vector3();
 let savedQuaternion = new THREE.Quaternion();
-const castleCenter = new THREE.Vector3(286.5, 0, 0);
+const castleCenter = new THREE.Vector3(0, 0, 0);
 const viewHeight = 240;
 
 export function toggleOrbit (camera, renderer, fpsControls){

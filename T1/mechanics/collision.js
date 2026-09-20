@@ -7,7 +7,7 @@ const wallRayOffsets = [-0.6, 0, 0.6];
 
 let velocityY = 0;
 let isGrounded = false;
-const gravity = 40;
+const gravity = 25;
 const jumpVelocity = 12;
 const playerWidth = 0.6;
 const maximumStepHeight = 1.5;
@@ -116,6 +116,10 @@ export function groundCollision(camera, floors, delta) {
   camera.position.y += velocityY * delta;
   isGrounded = false;
 
+  // quanto o player caiu neste frame: limita a penetração possível no chão,
+  // então é a folga extra tanto pra achar quanto pra aceitar o pouso em queda rápida
+  const distanceFallen = velocityY < 0 ? -velocityY * delta : 0;
+
   const rayOrigin = camera.position.clone();
   rayOrigin.y += viewHeight + 0.5;
   raycaster.set(rayOrigin, down);
@@ -125,7 +129,7 @@ export function groundCollision(camera, floors, delta) {
     .intersectObjects(floors, true)
     .filter(({ object, point }) =>
       !object.userData.ignoreCollision &&
-      point.y <= camera.position.y + maximumStepHeight
+      point.y <= camera.position.y + maximumStepHeight + distanceFallen
     );
   if (intersections.length === 0) return;
 
@@ -140,7 +144,7 @@ export function groundCollision(camera, floors, delta) {
   }
 
   const canStepUp = heightDifference >= 0 &&
-    heightDifference <= maximumStepHeight;
+    heightDifference <= maximumStepHeight + distanceFallen;
   const canFollowRampDown = wasGrounded && heightDifference < 0 &&
     Math.abs(heightDifference) <= maximumGroundDrop;
 
