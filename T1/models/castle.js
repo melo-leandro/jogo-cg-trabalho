@@ -165,6 +165,8 @@ const frontPlatformGeometry = new THREE.BoxGeometry(2 + 2 * ZF, 0.5, 12 + 2 * ZF
 const entrancePlatformGeometry = new THREE.BoxGeometry(6.5 + 2 * ZF, 0.5, 2.5 + 2 * ZF);
 const pillarGeometry = new THREE.BoxGeometry(1, 12, 1);
 const elevatedPillarGeometry = new THREE.BoxGeometry(1, 13, 1);
+const pillarMaterial = setDefaultMaterial("#7d7c74"); // um pouco mais claro que o muro
+pillarMaterial.side = THREE.DoubleSide;
 
 // em cima da rampa de acesso (formato em U)
 floor(104, 11.75, -53 / 3, 8 / 3, 0.5, 8 / 3, 0, castelo, material);
@@ -220,17 +222,17 @@ inclinedPlatform(117, 11.99, 0, degreesToRadians(18.85), degreesToRadians(-90));
 inclinedPlatform(97, 11.99, 18, degreesToRadians(18.85), 0);
 
 // PILARES DA PASSARELA
-wall(86.5, 6, -20, null, null, null, 0, castelo, material, pillarGeometry);
+wall(86.5, 6, -20, null, null, null, 0, castelo, pillarMaterial, pillarGeometry);
 // frente do castelo, esquerda e direita (pov do fundo do castelo pra frente)
-wall(74, 6, 10, null, null, null, 0, castelo, material, pillarGeometry);
-wall(74, 6, -10, null, null, null, 0, castelo, material, pillarGeometry);
+wall(74, 6, 10, null, null, null, 0, castelo, pillarMaterial, pillarGeometry);
+wall(74, 6, -10, null, null, null, 0, castelo, pillarMaterial, pillarGeometry);
 // atras da casa alta
-wall(107.5, 6.5, 18, null, null, null, 0, castelo, material, elevatedPillarGeometry);
+wall(107.5, 6.5, 18, null, null, null, 0, castelo, pillarMaterial, elevatedPillarGeometry);
 // direita do castelo
-wall(86.58, 6, 18, null, null, null, 0, castelo, material, pillarGeometry);
+wall(86.58, 6, 18, null, null, null, 0, castelo, pillarMaterial, pillarGeometry);
 // fundo do castelo, esquerda e direita
-wall(117, 6, -7.92, null, null, null, 0, castelo, material, pillarGeometry);
-wall(117, 6.5, 4.5, null, null, null, 0, castelo, material, elevatedPillarGeometry);
+wall(117, 6, -7.92, null, null, null, 0, castelo, pillarMaterial, pillarGeometry);
+wall(117, 6.5, 4.5, null, null, null, 0, castelo, pillarMaterial, elevatedPillarGeometry);
 
 function curvedPlatform(centerX, centerZ, startAngle, endAngle, height = 12) {
     const innerRadius = 4.4;
