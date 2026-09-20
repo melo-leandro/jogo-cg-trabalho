@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
-import { createFloor, createRamp, ZF } from "./tools.js";
+import { floor, ramp, ZF } from "./tools.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("gray");
@@ -128,7 +128,7 @@ const walkwaySections = [
 for (const [x1, x2, z1, z2, height = 12] of walkwaySections) {
     const [xMin, xMax] = [Math.min(x1, x2), Math.max(x1, x2)];
     const [zMin, zMax] = [Math.min(z1, z2), Math.max(z1, z2)];
-    const platform = createFloor(
+    const platform = floor(
         (xMin + xMax) / 2, height - 0.25, (zMin + zMax) / 2,
         xMax - xMin, 0.5, zMax - zMin, 0, "gray", castelo
     );
@@ -180,7 +180,7 @@ createCurvedPlatform(72, -20, degreesToRadians(12), degreesToRadians(78));
 
 function createInclinedWalkway(x, y, z, run, rise, width, rotationY) {
     const slopeLength = Math.hypot(run, rise);
-    const walkway = createFloor(0, 0, 0, slopeLength, 0.5, width, 0, "gray", castelo);
+    const walkway = floor(0, 0, 0, slopeLength, 0.5, width, 0, "gray", castelo);
     walkway.rotation.set(0, rotationY, Math.atan2(rise, run));
 
     const direction = new THREE.Vector3(1, 0, 0).applyEuler(walkway.rotation);
@@ -197,7 +197,7 @@ createInclinedWalkway(117, 12, 0, 3, 1, 2, degreesToRadians(-90));
 createInclinedWalkway(97, 12, 18, 3, 1, 2, 0);
 
 // Sobe do teto da casa menor ate a passarela elevada do castelo.
-createRamp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "gray", castelo);
+ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "gray", castelo);
 
 castelo.add(westWalls);
 

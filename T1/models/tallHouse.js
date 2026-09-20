@@ -1,95 +1,49 @@
 import * as THREE from 'three';
 import {setDefaultMaterial, degreesToRadians} from "../libs/util/util.js";
-import { ZF } from "./tools.js";
+import { ZF, wall, floor, ramp } from "./tools.js";
 
 let tallHouse = new THREE.Group();
-let material = setDefaultMaterial("gray");
-
 
 // -> PAREDES
-function wall(x, y, z, width, height, depth, rotationY, color, ground) {
-    let wallGeometry = new THREE.BoxGeometry(width, height, depth);
-    let material = setDefaultMaterial(color);
-    let wallMesh = new THREE.Mesh(wallGeometry, material);
-  if (ground === true) {
-    wallMesh.userData.ground = true;
-  }
-    wallMesh.position.set(x, y, z);
-    wallMesh.rotation.y = rotationY;
-    tallHouse.add(wallMesh);
-}
 
 // PAREDES LATERAIS
-wall(162.297, 9, 25, 1, 18, 20, degreesToRadians(76), "beige"); // LADO DIREITO
-wall(166.037, 9, 10, 1, 18, 20, degreesToRadians(76), "beige");
+wall(162.297, 9, 25, 1, 18, 20, degreesToRadians(76), "beige", tallHouse); // LADO DIREITO
+wall(166.037, 9, 10, 1, 18, 20, degreesToRadians(76), "beige", tallHouse);
 
 // PAREDE DE TRÁS
-wall(173.335, 9, 20, 1, 18, 15, degreesToRadians(166), "beige");
+wall(173.335, 9, 20, 1, 18, 15, degreesToRadians(166), "beige", tallHouse);
 
 // PAREDE DA FRENTE
 // direita
-wall(153.91, 9, 19.37, 1, 18, 6, degreesToRadians(166), "beige");
+wall(153.91, 9, 19.37, 1, 18, 6, degreesToRadians(166), "beige", tallHouse);
 
 // esquerda
-wall(156.09, 9, 10.63, 1, 18, 6, degreesToRadians(166), "beige");
+wall(156.09, 9, 10.63, 1, 18, 6, degreesToRadians(166), "beige", tallHouse);
 
 // parede em cima da porta + parede em cima da janela
-wall(155, 7.5, 15, 1, 7, 4, degreesToRadians(166), "beige");
-wall(155, 16, 15, 1, 4, 4, degreesToRadians(166), "beige");
+wall(155, 7.5, 15, 1, 7, 4, degreesToRadians(166), "beige", tallHouse);
+wall(155, 16, 15, 1, 4, 4, degreesToRadians(166), "beige", tallHouse);
 
 // PISOS + TELHADO
 
-function createFloor(x, y, z, width, height, depth) {
-    let floorGeometry = new THREE.BoxGeometry(width + 2 * ZF, height, depth + 2 * ZF);
-    let floor = new THREE.Mesh(floorGeometry, material);
-    floor.userData.walkable = true;
-    floor.position.set(x, y + ZF, z);
-    floor.rotation.y = degreesToRadians(166);
-    tallHouse.add(floor);
-}
-
-createFloor(164.17, 0.25, 17.5, 20, 0.5, 16); // chao
-createFloor(162.25, 8.75, 17.01, 17, 0.5, 17); // primeiro andar
-createFloor(164.17, 18.25, 17.5, 21, 0.5, 17); // telhado
-
+floor(164.17, 0.25, 17.5, 20, 0.5, 16, degreesToRadians(166), "gray", tallHouse); // chao
+floor(162.25, 8.75, 17.01, 17, 0.5, 17, degreesToRadians(166), "gray", tallHouse); // primeiro andar
+floor(164.17, 18.25, 17.5, 21, 0.5, 17, degreesToRadians(166), "gray", tallHouse); // telhado
 
 // RAMPAS/ESCADAS
 
-function createRamp(x, y, z, length, height, width, rotationY, color) {
-  const shape = new THREE.Shape();
-  shape.moveTo(0, 0);
-  shape.lineTo(length, 0);
-  shape.lineTo(length, height);
-  shape.closePath();
+ramp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "sienna", tallHouse); // primeira rampa
+wall(170.2, 2.5, 25.4, 2.5, 4.5, 2.5, degreesToRadians(76), "brown", tallHouse); // bloco entre as rampas
+ramp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "sienna", tallHouse); // segunda rampa
+wall(173.14, 6.75, 13.58, 2.5, 4.5, 2.5, degreesToRadians(166), "brown", tallHouse); // bloco no fim da escada
 
-  const rampGeometry = new THREE.ExtrudeGeometry(shape, {
-    depth: width,
-    bevelEnabled: false
-  });
+wall(170.01, 2.5, 21.44, 0.2, 4.5, 5.09, degreesToRadians(166), "brown", tallHouse); // parede fina da direita
+wall(171.72, 2.5, 14.55, 0.2, 4.5, 5.09, degreesToRadians(166), "brown", tallHouse); // parede fina da esquerda
 
-  let material = setDefaultMaterial(color);
-  let ramp = new THREE.Mesh(rampGeometry, material);
-  ramp.userData.walkable = true;
-
-  ramp.position.set(x, y + 2 * ZF, z);
-  ramp.rotation.y = rotationY;
-
-  tallHouse.add(ramp);
-  return ramp;
-}
-
-createRamp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "sienna"); // primeira rampa
-wall(170.2, 2.5, 25.4, 2.5, 4.5, 2.5, degreesToRadians(76), "brown", true); // bloco entre as rampas
-createRamp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "sienna"); // segunda rampa
-wall(173.14, 6.75, 13.58, 2.5, 4.5, 2.5, degreesToRadians(166), "brown", true); // bloco no fim da escada
-
-wall(170.01, 2.5, 21.44, 0.2, 4.5, 5.09, degreesToRadians(166), "brown"); // parede fina da direita
-wall(171.72, 2.5, 14.55, 0.2, 4.5, 5.09, degreesToRadians(166), "brown"); // parede fina da esquerda
-
-
-createRamp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "sienna"); // rampa da porta
+ramp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "sienna", tallHouse); // rampa da porta
 
 tallHouse.scale.setScalar(2);
+
 export { tallHouse };
 
 

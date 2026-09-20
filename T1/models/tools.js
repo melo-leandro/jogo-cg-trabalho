@@ -10,16 +10,16 @@ export const ZF = 0.01;
 export function wall(x, y, z, width, height, depth, rotationY, color, group) {
     let wallGeometry = new THREE.BoxGeometry(width, height, depth);
     let material = setDefaultMaterial(color);
-    let wallMesh = new THREE.Mesh(wallGeometry, material);
-    wallMesh.position.set(x, y, z);
-    wallMesh.rotation.y = rotationY;
+    let wall = new THREE.Mesh(wallGeometry, material);
+    wall.position.set(x, y, z);
+    wall.rotation.y = rotationY;
     if (group) {
-        group.add(wallMesh);
+        group.add(wall);
     }
-    return wallMesh;
+    return wall;
 }
 
-export function createFloor(x, y, z, width, height, depth, rotationY = 0, color = "gray", group = null) {
+export function floor(x, y, z, width, height, depth, rotationY = 0, color = "gray", group = null) {
     let floorGeometry = new THREE.BoxGeometry(width + 2 * ZF, height, depth + 2 * ZF);
     let material = setDefaultMaterial(color);
     let floor = new THREE.Mesh(floorGeometry, material);
@@ -28,10 +28,11 @@ export function createFloor(x, y, z, width, height, depth, rotationY = 0, color 
     if (group) {
         group.add(floor);
     }
+    floor.userData.walkable = true;
     return floor;
 }
 
-export function createRamp(x, y, z, length, height, width, rotationY, color, group) {
+export function ramp(x, y, z, length, height, width, rotationY, color, group) {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
     shape.lineTo(length, 0);
