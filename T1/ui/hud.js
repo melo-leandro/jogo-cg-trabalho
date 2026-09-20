@@ -1,4 +1,4 @@
-import { InfoBox, SecondaryBox } from "../libs/util/util.js";
+import { InfoBox } from "../libs/util/util.js";
 
 export function createHud(camera) {
   const crosshair = document.createElement("div");
