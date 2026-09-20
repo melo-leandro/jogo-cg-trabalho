@@ -159,6 +159,20 @@ addTopBlocks(76, -3.65, 6, 'x', 17.9, 1, towerBlockShape, 0.6);
 addTopBlocks(71.35, 0, 4, 'z', 17.9, 1, towerBlockShape, 0.6); // frente da entrada (centro)
 addTopBlocks(78.65, 0, 8, 'z', 17.9, 1, towerBlockShape, 0.6); // fundo da entrada (centro)
 
+// blocos no topo das torres quadradas
+addTopBlocks(95, -23.65, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(95, -19.35, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(91.35, -21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(98.65, -21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(95, 19.35, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(95, 23.65, 8, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(91.35, 21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(98.65, 21.5, 5, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(120.5, -3.65, 5, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(120.5, 3.65, 5, 'x', 17.9, 1, towerBlockShape);
+addTopBlocks(118.35, 0, 8, 'z', 17.9, 1, towerBlockShape);
+addTopBlocks(122.65, 0, 8, 'z', 17.9, 1, towerBlockShape);
+
 // -> PASSARELA
 
 const frontPlatformGeometry = new THREE.BoxGeometry(2 + 2 * ZF, 0.5, 12 + 2 * ZF);
@@ -378,20 +392,6 @@ createMiddleTower(95, -21.5); // Oeste
 createMiddleTower(95, 21.5); // Leste
 createMiddleTower(120.5, 0, 90); // Traseira
 
-// ameias no topo das torres quadradas (topo em y=18; 8x5, traseira rotacionada 90°)
-addTopBlocks(95, -23.65, 8, 'x', 17.9, 1, towerBlockShape);
-addTopBlocks(95, -19.65, 8, 'x', 17.9, 1, towerBlockShape);
-addTopBlocks(91.35, -21.5, 5, 'z', 17.9, 1, towerBlockShape);
-addTopBlocks(98.65, -21.5, 5, 'z', 17.9, 1, towerBlockShape);
-addTopBlocks(95, 19.35, 8, 'x', 17.9, 1, towerBlockShape);
-addTopBlocks(95, 23.65, 8, 'x', 17.9, 1, towerBlockShape);
-addTopBlocks(91.35, 21.5, 5, 'z', 17.9, 1, towerBlockShape);
-addTopBlocks(98.65, 21.5, 5, 'z', 17.9, 1, towerBlockShape);
-addTopBlocks(120.5, -3.65, 5, 'x', 17.9, 1, towerBlockShape);
-addTopBlocks(120.5, 3.65, 5, 'x', 17.9, 1, towerBlockShape);
-addTopBlocks(118.35, 0, 8, 'z', 17.9, 1, towerBlockShape);
-addTopBlocks(122.65, 0, 8, 'z', 17.9, 1, towerBlockShape);
-
 // TORRES PEQUENAS ADJACENTES
 let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
 
@@ -418,7 +418,6 @@ function createSmallCrown(x, z) {
     smallCrownBase.position.set(x, 20 + ZF, z);
     smallCrownBase.rotation.x = degreesToRadians(-90);
     castelo.add(smallCrownBase);
-
 
     for (let thetaStart = 0; thetaStart < Math.PI * 2; thetaStart += Math.PI / 2) {
         let smallCrownGeometry = crownToothGeometry(1, 1, thetaStart, 1, 0.25);
