@@ -51,6 +51,11 @@ const { group: shortHouseDoor, doors: shortHouseDoors } = createDoubleDoor(4, 5.
 shortHouseDoor.position.set(156, 0, -7.5);
 shortHouse.add(shortHouseDoor);
 
+const foundationRampLeft = ramp(135.5, 0, -28, 1, 1, 25.5, degreesToRadians(0), null, shortHouse, concreteMaterial, 0);
+const foundationRampRight = ramp(136, 0, -1.5, 1, 1, 36, degreesToRadians(90), null, shortHouse, concreteMaterial, 0);
+foundationRampLeft.visible = false;
+foundationRampRight.visible = false;
+
 // ACESSO AO ANDAR SUPERIOR
 ramp(166.5, 1, -7, 16, 10, 4, degreesToRadians(90), "saddlebrown", shortHouse, woodMaterial, 32); // rampa de acesso
 floor(168.5, 5.5, -25.25, 4, 11, 4.5, degreesToRadians(0), shortHouse, woodMaterial); // apoio
