@@ -12,7 +12,7 @@ const woodMaterial = setDefaultMaterial("saddlebrown");
 const sideWallGeometry = new THREE.BoxGeometry(1, 18, 20);
 const frontWallGeometry = new THREE.BoxGeometry(1, 18, 6);
 const insideRampGeometry = new THREE.BoxGeometry(2.5, 4.5, 2.5);
-const thinWallGeometry = new THREE.BoxGeometry(0.2, 4.5, 5.09);
+const thinWallGeometry = new THREE.BoxGeometry(0.22, 4.6, 5.09);
 
 // -> PAREDES
 
@@ -42,15 +42,15 @@ floor(164.17, 18.25, 17.5, 21, 0.5, 17, degreesToRadians(166), tallHouse, floorM
 
 // RAMPAS/ESCADAS
 
-ramp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial); // primeira rampa
+ramp(161.528, 0.5, 21.95, 8, 4.249, 2.5, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial, 16); // primeira rampa
 floor(170.2, 2.5, 25.4, null, null, null, degreesToRadians(76), tallHouse, woodMaterial, insideRampGeometry); // bloco entre as rampas
-ramp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "saddlebrown", tallHouse, woodMaterial); // segunda rampa
+ramp(169.28, 4.75, 23.91, 9.71, 4.25, 2.5, degreesToRadians(76), "saddlebrown", tallHouse, woodMaterial, 16); // segunda rampa
 floor(173.14, 6.75, 13.58, null, null, null, degreesToRadians(166), tallHouse, woodMaterial, insideRampGeometry); // bloco no fim da escada
 
 wall(170.01, 2.5, 21.44, null, null, null, degreesToRadians(166), tallHouse, woodMaterial, thinWallGeometry); // parede fina da direita
 wall(171.72, 2.5, 14.55, null, null, null, degreesToRadians(166), tallHouse, woodMaterial, thinWallGeometry); // parede fina da esquerda
 
-ramp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial); // rampa da porta
+ramp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "saddlebrown", tallHouse, woodMaterial, 2); // rampa da porta
 
 const { group: tallHouseDoor, doors: tallHouseDoors } = createDoubleDoor(3, 3.5, 1);
 tallHouseDoor.position.set(154.558, 0.5, 14.89); // valores para porta no meio 155, 0.5, 15
