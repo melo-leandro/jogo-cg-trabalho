@@ -10,6 +10,7 @@ const wallMaterial = setDefaultMaterial("wheat");
 const floorMaterial = setDefaultMaterial("slategray");
 const roofMaterial = setDefaultMaterial("sienna");
 const woodMaterial = setDefaultMaterial("saddlebrown");
+const concreteMaterial = setDefaultMaterial("#65645D");
 
 // BASE
 floor(154, 0.25 - ZF, -15, 36, 0.5, 26, degreesToRadians(0), shortHouse, floorMaterial); // fundação
@@ -51,7 +52,7 @@ shortHouseDoor.position.set(156, 0, -7.5);
 shortHouse.add(shortHouseDoor);
 
 // ACESSO AO ANDAR SUPERIOR
-ramp(166.5, 1, -7, 16, 10, 4, degreesToRadians(90), "saddlebrown", shortHouse, woodMaterial); // rampa de acesso
+ramp(166.5, 1, -7, 16, 10, 4, degreesToRadians(90), "saddlebrown", shortHouse, woodMaterial, 32); // rampa de acesso
 floor(168.5, 5.5, -25.25, 4, 11, 4.5, degreesToRadians(0), shortHouse, woodMaterial); // apoio
 
 // ANDAR SUPERIOR
@@ -65,7 +66,7 @@ wall(166, 13.5, -12.75, 20.5, 7, 1, degreesToRadians(90), shortHouse, wallMateri
 floor(168.5, 16.5, -15.5, 6, 1, 26, degreesToRadians(0), shortHouse, roofMaterial); // laje
 
 // RAMPA DE ACESSO A PLATAFORMA SUPERIOR
-ramp(153.76, 11, -24.5, 10.5, 7, 4, degreesToRadians(180), "saddlebrown", shortHouse, woodMaterial);
+ramp(153.76, 11, -24.5, 10.5, 7, 4, degreesToRadians(180), null, shortHouse, concreteMaterial, 12); // rampa de acesso a plataforma superior
 
 
 shortHouse.scale.setScalar(2);
