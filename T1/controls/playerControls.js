@@ -1,4 +1,4 @@
-import { FirstPersonControls } from "three/addons/controls/FirstPersonControls.js";
+import { FirstPersonControls } from "../build/jsm/controls/FirstPersonControls.js";
 import { PointerLockControls } from "../build/jsm/controls/PointerLockControls.js";
 
 export function createPlayerControls(camera, domElement, canLock, canFly) {
