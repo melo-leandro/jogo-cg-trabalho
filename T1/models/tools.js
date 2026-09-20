@@ -42,8 +42,12 @@ export function floor(x, y, z, width, height, depth, rotationY = 0, group = null
     return floor;
 }
 
-export function ramp(x, y, z, length, height, width, rotationY, color, group = null, material = null, geometry = null) {
+export function ramp(x, y, z, length, height, width, rotationY, color, group = null, material = null, steps = 0, geometry = null) {
     validateGeometry(geometry, [length, height, width]);
+    if (!material) {
+        material = setDefaultMaterial(color);
+    }
+
     if (!geometry) {
         const shape = new THREE.Shape();
         shape.moveTo(0, 0);
@@ -56,10 +60,34 @@ export function ramp(x, y, z, length, height, width, rotationY, color, group = n
             bevelEnabled: false
         });
     }
-    if (!material) {
-        material = setDefaultMaterial(color);
+
+    const collisionRamp = new THREE.Mesh(geometry, material);
+    collisionRamp.userData.walkable = true;
+    const stepCount = Math.max(0, Math.floor(steps));
+    let ramp = collisionRamp;
+
+    if (stepCount > 0) {
+        ramp = new THREE.Group();
+        collisionRamp.visible = false;
+        ramp.add(collisionRamp);
+        const stepLength = length / stepCount;
+
+        for (let index = 0; index < stepCount; index++) {
+            const stepHeight = height * (index + 1) / stepCount;
+            const step = new THREE.Mesh(
+                new THREE.BoxGeometry(stepLength, stepHeight, width),
+                material
+            );
+            step.position.set(
+                stepLength * (index + 0.5),
+                stepHeight / 2,
+                width / 2
+            );
+            step.userData.ignoreCollision = true;
+            ramp.add(step);
+        }
     }
-    let ramp = new THREE.Mesh(geometry, material);
+
     ramp.userData.walkable = true;
 
     ramp.position.set(x, y + 2 * ZF, z);
