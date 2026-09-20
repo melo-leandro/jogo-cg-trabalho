@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { smallHouse } from './smallHouse.js';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
+import { createFloor, createRamp, ZF } from "./tools.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("gray");
@@ -33,7 +33,7 @@ let crownBaseGeometry = new THREE.CircleGeometry(5, 256);
 function createCrown(x, z) {
     let crownBase = new THREE.Mesh(crownBaseGeometry, material);
 
-    crownBase.position.set(x, 18, z);
+    crownBase.position.set(x, 18 + ZF, z);
     crownBase.rotation.x = degreesToRadians(-90);
     castelo.add(crownBase);
 
@@ -101,6 +101,104 @@ let fourthWestWall = new THREE.Mesh(fourthWestWallGeometry, material);
 fourthWestWall.position.set(104, 6, -20);
 westWalls.add(fourthWestWall);
 
+// Passarela interna: [xMin, xMax, zMin, zMax, altura do piso (padrao: 12)].
+const walkwaySections = [
+    // Patamar e face interna da muralha junto a casa grande.
+    [308 / 3, 316 / 3, -19, -49 / 3],
+    [316 / 3, 115, -19, -17],
+    [116, 118, -16, 0.16],
+    // Desvio interno das torres; piso elevado acima do telhado da casa menor.
+    [116, 118, 3, 16, 13],
+    [100, 115, 17, 19, 13],
+    [76, 97.16, 17, 19],
+    // Face interna da frente, contornando a torre da entrada.
+    [73, 75, 4, 16],
+    [75, 81.5, 4, 6.5],
+    [79, 81.5, -6.5, 4.5],
+    [75, 81.5, -6.5, -4],
+    [73, 75, -16, -4],
+    // Acompanha o recuo do muro e passa pelo lado livre da rampa da casa.
+    [76, 84, -19, -17],
+    [82, 91, -21, -19],
+    [95.5, 316 / 3, -49 / 3, -43 / 3],
+    [93.5, 95.5, -19, -43 / 3],
+    [89, 95.5, -19, -17]
+];
+
+for (const [x1, x2, z1, z2, height = 12] of walkwaySections) {
+    const [xMin, xMax] = [Math.min(x1, x2), Math.max(x1, x2)];
+    const [zMin, zMax] = [Math.min(z1, z2), Math.max(z1, z2)];
+    const platform = createFloor(
+        (xMin + xMax) / 2, height - 0.25, (zMin + zMax) / 2,
+        xMax - xMin, 0.5, zMax - zMin, 0, "gray", castelo
+    );
+    platform.userData.walkable = true;
+}
+
+function createCurvedPlatform(centerX, centerZ, startAngle, endAngle, height = 12) {
+    const innerRadius = 4.4;
+    const outerRadius = 7.5;
+    const segments = 12;
+    const shape = new THREE.Shape();
+    const pointAt = (radius, angle) => [
+        centerX + Math.cos(angle) * radius,
+        centerZ + Math.sin(angle) * radius
+    ];
+    const outerStart = pointAt(outerRadius, startAngle);
+    shape.moveTo(outerStart[0], outerStart[1]);
+
+    for (let step = 1; step <= segments; step++) {
+        const angle = THREE.MathUtils.lerp(startAngle, endAngle, step / segments);
+        const [x, z] = pointAt(outerRadius, angle);
+        shape.lineTo(x, z);
+    }
+    for (let step = segments; step >= 0; step--) {
+        const angle = THREE.MathUtils.lerp(startAngle, endAngle, step / segments);
+        const [x, z] = pointAt(innerRadius, angle);
+        shape.lineTo(x, z);
+    }
+    shape.closePath();
+
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+        depth: .5,
+        bevelEnabled: false
+    });
+    geometry.rotateX(Math.PI / 2);
+
+    const platform = new THREE.Mesh(geometry, material);
+    platform.position.y = height + ZF;
+    platform.userData.walkable = true;
+    platform.userData.curvedPlatform = true;
+    castelo.add(platform);
+}
+
+// Plataformas em arco ao redor das quatro torres de canto.
+createCurvedPlatform(119, -20, degreesToRadians(102), degreesToRadians(168));
+createCurvedPlatform(119, 20, degreesToRadians(192), degreesToRadians(258), 13);
+createCurvedPlatform(72, 20, degreesToRadians(282), degreesToRadians(348));
+createCurvedPlatform(72, -20, degreesToRadians(12), degreesToRadians(78));
+
+function createInclinedWalkway(x, y, z, run, rise, width, rotationY) {
+    const slopeLength = Math.hypot(run, rise);
+    const walkway = createFloor(0, 0, 0, slopeLength, 0.5, width, 0, "gray", castelo);
+    walkway.rotation.set(0, rotationY, Math.atan2(rise, run));
+
+    const direction = new THREE.Vector3(1, 0, 0).applyEuler(walkway.rotation);
+    const normal = new THREE.Vector3(0, 1, 0).applyEuler(walkway.rotation);
+    walkway.position.set(x, y, z)
+        .addScaledVector(direction, slopeLength / 2)
+        .addScaledVector(normal, -0.25);
+    walkway.translateY(2 * ZF);
+    walkway.userData.walkable = true;
+}
+
+// Transicoes entre os trechos normal e elevado, sem degraus intransponiveis.
+createInclinedWalkway(117, 12, 0, 3, 1, 2, degreesToRadians(-90));
+createInclinedWalkway(97, 12, 18, 3, 1, 2, 0);
+
+// Sobe do teto da casa menor ate a passarela elevada do castelo.
+createRamp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "gray", castelo);
+
 castelo.add(westWalls);
 
 // TORRES FRONTAIS
@@ -158,12 +256,6 @@ createMiddleTower(95, -21.5); // Oeste
 createMiddleTower(95, 21.5); // Leste
 createMiddleTower(120.5, 0, 90); // Traseira
 
-
-let middleTowerBack = new THREE.Mesh(middleTowersGeometry, material);
-middleTowerBack.position.set(120.5, 9, 0);
-middleTowerBack.rotation.y = Math.PI/2;
-castelo.add(middleTowerBack);
-
 // TORRES PEQUENAS ADJACENTES
 let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
 
@@ -187,7 +279,7 @@ let smallCrownBaseGeometry = new THREE.CircleGeometry(1.2, 256);
 
 function createSmallCrown(x, z) {
     let smallCrownBase = new THREE.Mesh(smallCrownBaseGeometry, material);
-    smallCrownBase.position.set(x, 20, z);
+    smallCrownBase.position.set(x, 20 + ZF, z);
     smallCrownBase.rotation.x = degreesToRadians(-90);
     castelo.add(smallCrownBase);
 
