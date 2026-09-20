@@ -123,7 +123,10 @@ export function groundCollision(camera, floors, delta) {
 
   const intersections = raycaster
     .intersectObjects(floors, true)
-    .filter(({ point }) => point.y <= camera.position.y + maximumStepHeight);
+    .filter(({ object, point }) =>
+      !object.userData.ignoreCollision &&
+      point.y <= camera.position.y + maximumStepHeight
+    );
   if (intersections.length === 0) return;
 
   const groundHeight = intersections[0].point.y + viewHeight;
