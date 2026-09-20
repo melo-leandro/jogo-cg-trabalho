@@ -34,7 +34,8 @@ export function createWallCollision(objects) {
       const isCylinder = child.geometry.type === "CylinderGeometry";
       const isRamp =
         child.userData.walkable === true &&
-        child.geometry.type === "ExtrudeGeometry";
+        child.geometry.type === "ExtrudeGeometry" &&
+        child.userData.curvedPlatform !== true;
       let cylinderRadius = 0;
       const worldCylinderCenter = new THREE.Vector3();
       let worldCylinderRadius = 0;

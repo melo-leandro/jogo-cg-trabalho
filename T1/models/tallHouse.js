@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import {setDefaultMaterial, degreesToRadians} from "../libs/util/util.js";
+import { ZF } from "./tools.js";
 
-let smallHouse = new THREE.Group();
+let tallHouse = new THREE.Group();
 let material = setDefaultMaterial("gray");
 
 
@@ -15,7 +16,7 @@ function wall(x, y, z, width, height, depth, rotationY, color, ground) {
   }
     wallMesh.position.set(x, y, z);
     wallMesh.rotation.y = rotationY;
-    smallHouse.add(wallMesh);
+    tallHouse.add(wallMesh);
 }
 
 // PAREDES LATERAIS
@@ -39,12 +40,12 @@ wall(155, 16, 15, 1, 4, 4, degreesToRadians(166), "beige");
 // PISOS + TELHADO
 
 function createFloor(x, y, z, width, height, depth) {
-    let floorGeometry = new THREE.BoxGeometry(width, height, depth);
+    let floorGeometry = new THREE.BoxGeometry(width + 2 * ZF, height, depth + 2 * ZF);
     let floor = new THREE.Mesh(floorGeometry, material);
     floor.userData.walkable = true;
-    floor.position.set(x, y, z);
+    floor.position.set(x, y + ZF, z);
     floor.rotation.y = degreesToRadians(166);
-    smallHouse.add(floor);
+    tallHouse.add(floor);
 }
 
 createFloor(164.17, 0.25, 17.5, 20, 0.5, 16); // chao
@@ -70,10 +71,10 @@ function createRamp(x, y, z, length, height, width, rotationY, color) {
   let ramp = new THREE.Mesh(rampGeometry, material);
   ramp.userData.walkable = true;
 
-  ramp.position.set(x, y, z);
+  ramp.position.set(x, y + 2 * ZF, z);
   ramp.rotation.y = rotationY;
 
-  smallHouse.add(ramp);
+  tallHouse.add(ramp);
   return ramp;
 }
 
@@ -88,8 +89,8 @@ wall(171.72, 2.5, 14.55, 0.2, 4.5, 5.09, degreesToRadians(166), "brown"); // par
 
 createRamp(152.94, 0, 12.94, 2, 0.5, 3, degreesToRadians(346), "sienna"); // rampa da porta
 
-smallHouse.scale.setScalar(2);
-export { smallHouse };
+tallHouse.scale.setScalar(2);
+export { tallHouse };
 
 
 // https://www.youtube.com/watch?v=dQw4w9WgXcQ
@@ -97,4 +98,4 @@ let coolGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 128, 8, 2, 5);
 let coolMaterial = setDefaultMaterial("cyan");
 let easterEgg = new THREE.Mesh(coolGeometry, coolMaterial);
 easterEgg.position.set(173.2, 2, 13.5);
-smallHouse.add(easterEgg);
+tallHouse.add(easterEgg);
