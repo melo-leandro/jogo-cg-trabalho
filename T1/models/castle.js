@@ -257,6 +257,37 @@ function createEntranceWall(x, z) {
 createEntranceWall(75, 3);
 createEntranceWall(75, -3);
 
+// ARCO DA ENTRADA
+const entranceDoorFrame = new THREE.Group();
+const doorFrameColumnGeometry = new THREE.BoxGeometry(0.6, 3.2, 1.1);
+wall(0, 1.6, -2.05, null, null, null, 0, entranceDoorFrame, material, doorFrameColumnGeometry);
+wall(0, 1.6, 2.05, null, null, null, 0, entranceDoorFrame, material, doorFrameColumnGeometry);
+
+const doorFrameArchShape = new THREE.Shape();
+doorFrameArchShape.moveTo(-2.6, 0);
+doorFrameArchShape.lineTo(-2.6, 1.8);
+doorFrameArchShape.lineTo(2.6, 1.8);
+doorFrameArchShape.lineTo(2.6, 0);
+doorFrameArchShape.lineTo(1.5, 0);
+doorFrameArchShape.quadraticCurveTo(0.98, 0.92, 0, 1.15);
+doorFrameArchShape.quadraticCurveTo(-0.98, 0.92, -1.5, 0);
+doorFrameArchShape.closePath();
+
+const doorFrameArchGeometry = new THREE.ExtrudeGeometry(doorFrameArchShape, {
+    depth: 0.6,
+    bevelEnabled: false,
+    curveSegments: 24
+});
+doorFrameArchGeometry.translate(0, 0, -0.3);
+doorFrameArchGeometry.rotateY(degreesToRadians(90));
+
+const doorFrameArch = new THREE.Mesh(doorFrameArchGeometry, material);
+doorFrameArch.position.y = 3.2;
+entranceDoorFrame.add(doorFrameArch);
+
+entranceDoorFrame.position.x = 71.3;
+castelo.add(entranceDoorFrame);
+
 //TORRE LATERAIS E TRASEIRA
 let middleTowersGeometry = new THREE.BoxGeometry(8, 18, 5);
 
