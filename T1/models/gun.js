@@ -36,20 +36,6 @@ export function criarArma(camera) {
     const corpo = new THREE.Mesh(corpoGeometria, materialMetal);
     corpo.position.set(0, -0.02, 0.1);
     armaGroup.add(corpo);
-    
-    //cabo
-    const caboGeometria = new THREE.BoxGeometry(0.07, 0.22, 0.08);
-    const cabo = new THREE.Mesh(caboGeometria, materialCabo);
-    cabo.position.set(0, -0.16, 0.15);
-    cabo.rotation.x = Math.PI / 10;
-    armaGroup.add(cabo);
-
-    //boca do cano
-    const bocaGeometria = new THREE.CylinderGeometry(0.045, 0.045, 0.1);
-    const boca = new THREE.Mesh(bocaGeometria, materialMetal);
-    boca.rotation.x = Math.PI / 2;
-    boca.position.set(0, 0, -0.2);
-    armaGroup.add(boca);
 
     armaGroup.position.set(0.3, -0.3, -1);
     camera.add(armaGroup);
@@ -57,6 +43,14 @@ export function criarArma(camera) {
     const ponta = new THREE.Object3D();
     ponta.position.set(0, 0, -0.25);
     armaGroup.add(ponta);
+
+    armaGroup.traverse(function (objeto) {
+        if (objeto.isMesh) {
+            objeto.material.depthTest = false;
+            objeto.material.depthWrite = false;
+            objeto.renderOrder = 999;
+        }
+    });
 
     return { arma: armaGroup, ponta };
 }
