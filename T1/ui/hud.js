@@ -36,7 +36,7 @@ export function createHud(camera) {
   const orbitControlsBox = new InfoBox();
   orbitControlsBox.infoBox.style.cssText = controlsBox.infoBox.style.cssText;
   orbitControlsBox.add("Girar: Botão esquerdo do mouse");
-  orbitControlsBox.add("Pan: Botão direito do mouse");
+  orbitControlsBox.add("Arrastar: Botão direito do mouse");
   orbitControlsBox.add("Zoom: Roda do mouse");
   orbitControlsBox.add("Voltar: C");
 
