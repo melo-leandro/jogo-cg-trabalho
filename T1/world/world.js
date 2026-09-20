@@ -31,9 +31,9 @@ export function createWorld() {
   camera.lookAt(new THREE.Vector3(225 - castleCenterX, 25, 0));
   scene.add(camera);
 
-  scene.add(new THREE.AxesHelper(12));
+  // scene.add(new THREE.AxesHelper(12));
 
-  const ground = createGroundPlaneXZ(400, 400, 1, 1, "#328248");
+  const ground = createGroundPlaneXZ(600, 600, 1, 1, "#328248");
   ground.userData.walkable = true;
   const castleArea = new THREE.Group();
   castleArea.position.x = -castleCenterX;
