@@ -7,10 +7,11 @@ let velocityY = 0;
 const gravity = 20;
 const playerWidth = 0.6;
 const playerHeight = 4;
-const maximumStepHeight = 0.5;
-const maximumGroundDrop = 1;
+const maximumStepHeight = 1.5;
+const maximumGroundDrop = 1.5;
 const maximumMovementStep = playerWidth / 2;
 const minimumWallHeight = 1.1;
+const minimumSolidWalkableHeight = 2;
 
 export function createWallCollision(objects) {
   const colliders = [];
@@ -36,6 +37,10 @@ export function createWallCollision(objects) {
         child.userData.walkable === true &&
         child.geometry.type === "ExtrudeGeometry" &&
         child.userData.curvedPlatform !== true;
+      const shape = child.geometry.type === "ExtrudeGeometry" &&
+        child.userData.curvedPlatform !== true
+        ? child.geometry.parameters.shapes
+        : null;
       let cylinderRadius = 0;
       const worldCylinderCenter = new THREE.Vector3();
       let worldCylinderRadius = 0;
@@ -53,10 +58,16 @@ export function createWallCollision(objects) {
       }
 
       colliders.push({
-        blocksMovement: !child.userData.walkable || isRamp,
+        blocksMovement: !child.userData.walkable ||
+          isRamp ||
+          isSolidWalkableBlock(localBox, child.userData.walkable),
 
         containsPoint(point) {
           localPoint.copy(point).applyMatrix4(inverseMatrix);
+
+          if (shape) {
+            return pointIsInsideExtrusion(localPoint, localBox, shape);
+          }
 
           if (isCylinder) {
             const insideHeight =
@@ -82,32 +93,21 @@ export function createWallCollision(objects) {
 
           localPoint.copy(position).applyMatrix4(inverseMatrix);
 
-          if (isRamp) {
-            const sideMargin = playerWidth / Math.abs(scale.z);
-            const isAtLeftEdge =
-              localPoint.z >= localBox.min.z - sideMargin &&
-              localPoint.z <= localBox.min.z + sideMargin;
-            const isAtRightEdge =
-              localPoint.z >= localBox.max.z - sideMargin &&
-              localPoint.z <= localBox.max.z + sideMargin;
-            const isAlongRamp =
-              localPoint.x >= localBox.min.x - sideMargin &&
-              localPoint.x <= localBox.max.x + sideMargin;
-            const rampLength = localBox.max.x - localBox.min.x;
-            const rampHeight = localBox.max.y - localBox.min.y;
-            const rampProgress = THREE.MathUtils.clamp(
-              (localPoint.x - localBox.min.x) / rampLength,
-              0,
-              1
+          if (shape) {
+            const radius = playerWidth / Math.max(
+              Math.abs(scale.x),
+              Math.abs(scale.z)
             );
-            const rampSurface = localBox.min.y + rampHeight * rampProgress;
-            const playerBottom =
-              localPoint.y - playerHeight / Math.abs(scale.y);
-
-            return isAlongRamp &&
-              (isAtLeftEdge || isAtRightEdge) &&
-              playerBottom < rampSurface - 0.05 &&
-              localPoint.y > localBox.min.y;
+            return [
+              localPoint.x - radius,
+              localPoint.x,
+              localPoint.x + radius
+            ].some((x) => pointIsInsideExtrusion(
+              new THREE.Vector3(x, localPoint.y, localPoint.z),
+              localBox,
+              shape,
+              radius
+            ));
           }
 
           if (isCylinder) {
@@ -131,6 +131,46 @@ export function createWallCollision(objects) {
   }
 
   return colliders;
+}
+
+function isSolidWalkableBlock(box, walkable) {
+  return walkable === true && box.max.y - box.min.y > minimumSolidWalkableHeight;
+}
+
+function pointIsInsideExtrusion(point, box, shape, margin = 0) {
+  if (point.z < box.min.z - margin || point.z > box.max.z + margin) {
+    return false;
+  }
+
+  const shapes = Array.isArray(shape) ? shape : [shape];
+  return shapes.some((currentShape) => {
+    if (!pointIsInsidePolygon(point.x, point.y, currentShape.getPoints())) {
+      return false;
+    }
+
+    return !currentShape.holes.some((hole) =>
+      pointIsInsidePolygon(point.x, point.y, hole.getPoints())
+    );
+  });
+}
+
+function pointIsInsidePolygon(x, y, points) {
+  let inside = false;
+
+  for (let index = 0, previous = points.length - 1;
+    index < points.length;
+    previous = index++) {
+    const current = points[index];
+    const previousPoint = points[previous];
+    const crosses = (current.y > y) !== (previousPoint.y > y) &&
+      x < (previousPoint.x - current.x) *
+        (y - current.y) /
+        (previousPoint.y - current.y) + current.x;
+
+    if (crosses) inside = !inside;
+  }
+
+  return inside;
 }
 
 function isColliding(position, colliders) {
