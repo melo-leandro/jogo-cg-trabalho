@@ -8,6 +8,10 @@ import { groundCollision, wallCollision } from "./mechanics/collision.js";
 import { atirar, atualizarProjeteis } from "./mechanics/shooting.js";
 import { createHud } from "./ui/hud.js";
 import { createWorld } from "./world/world.js";
+import { castleDoors } from "./models/doors.js";
+import { shortHouseDoors } from "./models/shortHouse.js";
+import { tallHouseDoors } from "./models/tallHouse.js";
+import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
 
 const { scene, renderer, camera, grounds, wallCollisions } = createWorld();
 restoreCamera(camera);
@@ -49,9 +53,26 @@ window.addEventListener("mousedown", () => {
   }
 });
 
+
+// interação com portas
+const doorGroups = [castleDoors, shortHouseDoors, tallHouseDoors]
+  .map((doors) => ({ doors, isOpen: false }));
+let activeDoor = null;
+
+window.addEventListener("keydown", (event) => {
+  if (
+    event.code === "KeyE" &&
+    !event.repeat &&
+    activeDoor &&
+    !isInOrbitMode() &&
+    !isBuildCameraEnabled()
+  ) {
+    activeDoor.isOpen = !activeDoor.isOpen;
+  }
+});
+
 const clock = new THREE.Timer();
 clock.connect(document);
-
 
 render();
 
@@ -68,6 +89,14 @@ function render() {
     if (!isBuildCameraEnabled()) {
       wallCollision(camera, previousPosition, wallCollisions);
       groundCollision(camera, grounds, delta);
+    }
+  }
+
+  activeDoor = doorInteraction(doorGroups, camera);
+
+  for (const doorGroup of doorGroups) {
+    for (const [door, openRotation] of doorGroup.doors) {
+      doorLerping(door, doorGroup.isOpen ? openRotation : 0, 0.05);
     }
   }
 
