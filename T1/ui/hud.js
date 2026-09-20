@@ -33,7 +33,11 @@ export function createHud(camera) {
   controlsBox.add("Modo construção: B");
   controlsBox.show();
 
-  const cameraModeInfoBox = new InfoBox();
+  const orbitControlsBox = new InfoBox();
+  orbitControlsBox.infoBox.style.cssText = controlsBox.infoBox.style.cssText;
+  orbitControlsBox.add("Girar: Mouse");
+  orbitControlsBox.add("Zoom: Roda do mouse");
+  orbitControlsBox.add("Voltar: C");
 
   // infobox do modo de construção
   const buildModeBox = new InfoBox();
@@ -50,7 +54,6 @@ export function createHud(camera) {
     maxWidth: "calc(100vw - 20px)"
   });
 
-  let cameraMessageTimeout;
   let buildMessageTimeout;
 
   return {
@@ -59,12 +62,9 @@ export function createHud(camera) {
     },
 
     showCameraMode(isOrbiting) {
-      clearTimeout(cameraMessageTimeout);
-      cameraModeInfoBox.infoBox.innerHTML = "";
-      cameraModeInfoBox.add(isOrbiting ? "Câmera orbital" : "Câmera primeira pessoa");
-      cameraModeInfoBox.show();
-
-      cameraMessageTimeout = setTimeout(() => cameraModeInfoBox.infoBox.remove(), 2000);
+      controlsBox.infoBox.remove();
+      orbitControlsBox.infoBox.remove();
+      (isOrbiting ? orbitControlsBox : controlsBox).show();
     },
 
     showBuildMode(isBuildMode) {
