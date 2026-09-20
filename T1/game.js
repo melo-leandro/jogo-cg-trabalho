@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { isBuildCameraEnabled, toggleBuildCamera } from "./controls/buildCamera.js";
+import { restoreCamera, saveCamera } from "./controls/cameraStorage.js";
 import { createPlayerControls } from "./controls/playerControls.js";
 import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.js";
 import { criarArma } from "./models/gun.js";
@@ -9,6 +10,9 @@ import { createHud } from "./ui/hud.js";
 import { createWorld } from "./world/world.js";
 
 const { scene, renderer, camera, grounds, wallCollisions } = createWorld();
+restoreCamera(camera);
+window.addEventListener("pagehide", () => saveCamera(camera));
+
 const { controls, update: movePlayer } = createPlayerControls(
   camera,
   renderer.domElement,
@@ -17,6 +21,9 @@ const { controls, update: movePlayer } = createPlayerControls(
 );
 const { arma, ponta } = criarArma(camera);
 const hud = createHud(camera);
+const buildModeEnabled = isBuildCameraEnabled();
+arma.visible = !buildModeEnabled;
+hud.setCrosshairVisible(!buildModeEnabled);
 
 window.addEventListener("keydown", (event) => {
   if (event.code !== "KeyC" || event.repeat || isBuildCameraEnabled()) return;
