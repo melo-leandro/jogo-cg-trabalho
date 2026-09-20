@@ -5,6 +5,8 @@ let isOrbiting = false;
 let orbitControls = null;
 let savedPosition = new THREE.Vector3();
 let savedQuaternion = new THREE.Quaternion();
+const castleCenter = new THREE.Vector3(286.5, 0, 0);
+const viewHeight = 240;
 
 export function toggleOrbit (camera, renderer, fpsControls){
     isOrbiting = !isOrbiting;
@@ -19,11 +21,9 @@ export function toggleOrbit (camera, renderer, fpsControls){
             orbitControls = new OrbitControls(camera, renderer.domElement);
         }
 
-        const ALTURA_VISAO = 240; 
-        const target = new THREE.Vector3(camera.position.x, 0, camera.position.z);
-        camera.position.set(target.x, target.y + ALTURA_VISAO, target.z + ALTURA_VISAO * 0.4);
-
-        orbitControls.target.copy(target);
+        camera.position.set(castleCenter.x, castleCenter.y + viewHeight, castleCenter.z + viewHeight * 0.4);
+        orbitControls.target.copy(castleCenter);
+        orbitControls.enablePan = true;
 
         orbitControls.update();
     } else {
