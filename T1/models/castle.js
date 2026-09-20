@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
 import { floor, ramp, wall, ZF } from "./tools.js";
-import { frontDoor } from "./doors.js";
+import { castleDoors, frontDoor } from "./doors.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("#65645D");
@@ -120,7 +120,7 @@ const towerBlockShape = new THREE.BoxGeometry(1, 1.8, 0.7);
 
 function addTopBlocks(centerX, centerZ, length, axis, height, blockLength = 2, shape = blockShape, gap = 1.5) {
     const spacing = blockLength + gap;
-    const count = Math.floor(length / spacing);
+    const count = Math.floor((length + gap) / spacing);
     const alongX = axis === 'x';
     for (let index = 0; index < count; index++) {
         const offset = (index - (count - 1) / 2) * spacing;
@@ -138,6 +138,8 @@ addTopBlocks(120, 0, 40, 'z', 12.25);   // fundo
 addTopBlocks(95.5, 21, 40, 'x', 12.25); // direita
 addTopBlocks(104, -21, 24, 'x', 12.25); // esquerda (trecho longo)
 addTopBlocks(86, -23, 10, 'x', 12.25);  // esquerda (trecho curto)
+addTopBlocks(78, -21, 4, 'x', 12.25);   // esquerda (base do L)
+addTopBlocks(80.25, -22, 4, 'z', 12.25); // esquerda (curva do L)
 
 // blocos do bloco frontal
 addTopBlocks(71.5, 9.65, 3, 'x', 17.9, 1, towerBlockShape, 0.6); // lado externo
@@ -349,6 +351,16 @@ entranceDoorFrame.add(doorFrameArch);
 entranceDoorFrame.position.x = 71.3;
 castelo.add(entranceDoorFrame);
 
+// duplica arco + porta no fim do corredor (fundo da entrada, espelhado sobre x=75)
+const backDoorFrame = entranceDoorFrame.clone();
+backDoorFrame.position.x = 78.7;
+castelo.add(backDoorFrame);
+
+const backDoor = frontDoor.clone(); // frontDoor tem as folhas em x=71.6 → +6.8 = 78.4
+backDoor.position.x = 7.4;
+castelo.add(backDoor);
+const backCastleDoors = backDoor.children.map((door, index) => [door, castleDoors[index][1]]);
+
 //TORRE LATERAIS E TRASEIRA
 let middleTowersGeometry = new THREE.BoxGeometry(8, 18, 5);
 
@@ -426,4 +438,4 @@ createSmallCrown(119, 4); // 8
 castelo.scale.setScalar(3);
 castelo.add(frontDoor);
 
-export { castelo };
+export { backCastleDoors, castelo };

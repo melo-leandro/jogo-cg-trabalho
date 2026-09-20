@@ -4,6 +4,7 @@ import { restoreCamera, saveCamera } from "./controls/cameraStorage.js";
 import { createPlayerControls } from "./controls/playerControls.js";
 import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.js";
 import { criarArma } from "./models/gun.js";
+import { backCastleDoors } from "./models/castle.js";
 import { groundCollision, jump, wallCollision } from "./mechanics/collision.js";
 import { atirar, atualizarProjeteis } from "./mechanics/shooting.js";
 import { createHud } from "./ui/hud.js";
@@ -67,10 +68,10 @@ window.addEventListener("mousedown", () => {
 
 
 // interação com portas
-const doorGroups = [castleDoors, shortHouseDoors, tallHouseDoors]
+const doorGroups = [castleDoors, backCastleDoors, shortHouseDoors, tallHouseDoors]
   .map((doors) => ({ doors, isOpen: false }));
-let activeDoor = null;
 
+/* controle manual desativado
 window.addEventListener("keydown", (event) => {
   if (
     event.code === "KeyE" &&
@@ -82,6 +83,7 @@ window.addEventListener("keydown", (event) => {
     activeDoor.isOpen = !activeDoor.isOpen;
   }
 });
+*/
 
 const clock = new THREE.Timer();
 clock.connect(document);
@@ -104,7 +106,7 @@ function render() {
     }
   }
 
-  activeDoor = doorInteraction(doorGroups, camera);
+  doorInteraction(doorGroups, camera);
 
   for (const doorGroup of doorGroups) {
     for (const [door, openRotation, animationSpeed = 0.05] of doorGroup.doors) {
