@@ -14,7 +14,7 @@ export function createPlayerControls(camera, domElement, canLock, canFly) {
 
   function update(delta) {
     const isRunning = keys.has("ShiftLeft") || keys.has("ShiftRight");
-    const distance = 20 * delta * (isRunning ? 3 : 1);
+    const distance = 15 * delta * (isRunning ? 2 : 1);
     const isFlying = canFly();
 
     if (keys.has("KeyW") || keys.has("ArrowUp")) controls.moveForward(distance);

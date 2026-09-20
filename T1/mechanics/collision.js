@@ -7,7 +7,7 @@ const wallRayOffsets = [-0.6, 0, 0.6];
 
 let velocityY = 0;
 let isGrounded = false;
-const gravity = 30;
+const gravity = 40;
 const jumpVelocity = 12;
 const playerWidth = 0.6;
 const maximumStepHeight = 1.5;
