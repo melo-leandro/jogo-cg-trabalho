@@ -64,7 +64,7 @@ export { tallHouse, tallHouseDoors };
 
 // https://www.youtube.com/watch?v=dQw4w9WgXcQ
 let coolGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 128, 8, 2, 5);
-let coolMaterial = setDefaultMaterial("sienna");
+let coolMaterial = setDefaultMaterial("lawngreen");
 let easterEgg = new THREE.Mesh(coolGeometry, coolMaterial);
 easterEgg.position.set(173.2, 2, 13.5);
 tallHouse.add(easterEgg);
