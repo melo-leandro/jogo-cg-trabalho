@@ -7,10 +7,15 @@ import { setDefaultMaterial } from "../libs/util/util.js";
 // esse offset resolve
 export const ZF = 0.01;
 
-export function wall(x, y, z, width, height, depth, rotationY, color, group) {
-    let wallGeometry = new THREE.BoxGeometry(width, height, depth);
-    let material = setDefaultMaterial(color);
-    let wall = new THREE.Mesh(wallGeometry, material);
+export function wall(x, y, z, width, height, depth, rotationY, group, material = null, geometry = null) {
+    validateGeometry(geometry, [width, height, depth]);
+    if (!geometry) {
+        geometry = new THREE.BoxGeometry(width, height, depth);
+    }
+    if (!material) {
+        material = setDefaultMaterial("red");
+    }
+    let wall = new THREE.Mesh(geometry, material);
     wall.position.set(x, y, z);
     wall.rotation.y = rotationY;
     if (group) {
@@ -19,10 +24,15 @@ export function wall(x, y, z, width, height, depth, rotationY, color, group) {
     return wall;
 }
 
-export function floor(x, y, z, width, height, depth, rotationY = 0, color = "gray", group = null) {
-    let floorGeometry = new THREE.BoxGeometry(width + 2 * ZF, height, depth + 2 * ZF);
-    let material = setDefaultMaterial(color);
-    let floor = new THREE.Mesh(floorGeometry, material);
+export function floor(x, y, z, width, height, depth, rotationY = 0, group = null, material = null, geometry = null) {
+    validateGeometry(geometry, [width, height, depth]);
+    if (!geometry) {
+        geometry = new THREE.BoxGeometry(width + 2 * ZF, height, depth + 2 * ZF);
+    }
+    if (!material) {
+        material = setDefaultMaterial("red");
+    }
+    let floor = new THREE.Mesh(geometry, material);
     floor.position.set(x, y + ZF, z);
     floor.rotation.y = rotationY;
     if (group) {
@@ -32,20 +42,24 @@ export function floor(x, y, z, width, height, depth, rotationY = 0, color = "gra
     return floor;
 }
 
-export function ramp(x, y, z, length, height, width, rotationY, color, group) {
-    const shape = new THREE.Shape();
-    shape.moveTo(0, 0);
-    shape.lineTo(length, 0);
-    shape.lineTo(length, height);
-    shape.closePath();
+export function ramp(x, y, z, length, height, width, rotationY, color, group = null, material = null, geometry = null) {
+    validateGeometry(geometry, [length, height, width]);
+    if (!geometry) {
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 0);
+        shape.lineTo(length, 0);
+        shape.lineTo(length, height);
+        shape.closePath();
 
-    const rampGeometry = new THREE.ExtrudeGeometry(shape, {
-        depth: width,
-        bevelEnabled: false
-    });
-
-    let material = setDefaultMaterial(color);
-    let ramp = new THREE.Mesh(rampGeometry, material);
+        geometry = new THREE.ExtrudeGeometry(shape, {
+            depth: width,
+            bevelEnabled: false
+        });
+    }
+    if (!material) {
+        material = setDefaultMaterial(color);
+    }
+    let ramp = new THREE.Mesh(geometry, material);
     ramp.userData.walkable = true;
 
     ramp.position.set(x, y + 2 * ZF, z);
@@ -55,4 +69,11 @@ export function ramp(x, y, z, length, height, width, rotationY, color, group) {
         group.add(ramp);
     }
     return ramp;
+}
+
+// Se a geometria for fornecida, as dimensões devem ser nulas e vice-versa.
+function validateGeometry(geometry, dimensions) {
+    if (geometry && dimensions.some(dimension => dimension !== null)) {
+        throw new Error("Dimensions must be null when geometry is provided.");
+    }
 }

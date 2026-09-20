@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
-import { floor, ramp, ZF } from "./tools.js";
+import { floor, ramp, wall, ZF } from "./tools.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("gray");
@@ -10,27 +10,22 @@ material.side = THREE.DoubleSide;
 
 let towerGeometry = new THREE.CylinderGeometry(4.5, 4.5, 18);
 
-let towerNW = new THREE.Mesh(towerGeometry, material);
-towerNW.position.set(119.0, 9.0, -20.0);
-castelo.add(towerNW);
+function cylinderTower(x, z) {
+    let tower = new THREE.Mesh(towerGeometry, material);
+    tower.position.set(x, 9, z);
+    castelo.add(tower);
+}
 
-let towerSW = new THREE.Mesh(towerGeometry, material);
-towerSW.position.set(72.0, 9.0, -20.0);
-castelo.add(towerSW);
-
-let towerNE = new THREE.Mesh(towerGeometry, material);
-towerNE.position.set(119.0, 9.0, 20.0);
-castelo.add(towerNE);
-
-let towerSE = new THREE.Mesh(towerGeometry, material);
-towerSE.position.set(72.0, 9.0, 20.0);
-castelo.add(towerSE);
+cylinderTower(119.0, -20.0); // noroeste
+cylinderTower(72.0, -20.0); // sudoeste
+cylinderTower(119.0, 20.0); // nordeste
+cylinderTower(72.0, 20.0); // sudeste
 
 //COROAS DAS TORRES CILINDRICAS
+
 let crownBaseGeometry = new THREE.CircleGeometry(5, 256);
 
-
-function createCrown(x, z) {
+function crown(x, z) {
     let crownBase = new THREE.Mesh(crownBaseGeometry, material);
 
     crownBase.position.set(x, 18 + ZF, z);
@@ -47,24 +42,24 @@ function createCrown(x, z) {
     }
 }
 
-createCrown(119.0, -20.0); // NW
-createCrown(119.0, 20.0);  // NE
-createCrown(72.0, -20.0);  // SW
-createCrown(72.0, 20.0);   // SE
+crown(119.0, -20.0); // NW
+crown(119.0, 20.0);  // NE
+crown(72.0, -20.0);  // SW
+crown(72.0, 20.0);   // SE
 
 // MURO
 
 // -> FRENTE E TRÁS
 let frontWallsGeometry = new THREE.BoxGeometry(2, 12, 16);
 
-function createFrontWall(x, z) {
+function frontWall(x, z) {
     let frontWall = new THREE.Mesh(frontWallsGeometry, material);
     frontWall.position.set(x, 6, z);
     castelo.add(frontWall);
 }
 
-createFrontWall(72, 10);
-createFrontWall(72, -10);
+frontWall(72, 10);
+frontWall(72, -10);
 
 let northWallGeometry = new THREE.BoxGeometry(2, 12, 40);
 let northWall = new THREE.Mesh(northWallGeometry, material);
@@ -101,41 +96,89 @@ let fourthWestWall = new THREE.Mesh(fourthWestWallGeometry, material);
 fourthWestWall.position.set(104, 6, -20);
 westWalls.add(fourthWestWall);
 
-// Passarela interna: [xMin, xMax, zMin, zMax, altura do piso (padrao: 12)].
-const walkwaySections = [
-    // Patamar e face interna da muralha junto a casa grande.
-    [308 / 3, 316 / 3, -19, -49 / 3],
-    [316 / 3, 115, -19, -17],
-    [116, 118, -16, 0.16],
-    // Desvio interno das torres; piso elevado acima do telhado da casa menor.
-    [116, 118, 3, 16, 13],
-    [100, 115, 17, 19, 13],
-    [76, 97.16, 17, 19],
-    // Face interna da frente, contornando a torre da entrada.
-    [73, 75, 4, 16],
-    [75, 81.5, 4, 6.5],
-    [79, 81.5, -6.5, 4.5],
-    [75, 81.5, -6.5, -4],
-    [73, 75, -16, -4],
-    // Acompanha o recuo do muro e passa pelo lado livre da rampa da casa.
-    [76, 84, -19, -17],
-    [82, 91, -21, -19],
-    [95.5, 316 / 3, -49 / 3, -43 / 3],
-    [93.5, 95.5, -19, -43 / 3],
-    [89, 95.5, -19, -17]
-];
+// -> PASSARELA
 
-for (const [x1, x2, z1, z2, height = 12] of walkwaySections) {
-    const [xMin, xMax] = [Math.min(x1, x2), Math.max(x1, x2)];
-    const [zMin, zMax] = [Math.min(z1, z2), Math.max(z1, z2)];
+const purpleMaterial = setDefaultMaterial("#aa00ff");
+const greenMaterial = setDefaultMaterial("#00c853");
+const blueMaterial = setDefaultMaterial("#2962ff");
+const limeMaterial = setDefaultMaterial("#aeea00");
+const brightGreenMaterial = setDefaultMaterial("#64dd17");
+const orangeMaterial = setDefaultMaterial("#ffab00");
+const yellowMaterial = setDefaultMaterial("#ffd600");
+
+const frontPlatformGeometry = new THREE.BoxGeometry(2 + 2 * ZF, 0.5, 12 + 2 * ZF);
+const entrancePlatformGeometry = new THREE.BoxGeometry(6.5 + 2 * ZF, 0.5, 2.5 + 2 * ZF);
+const pillarGeometry = new THREE.BoxGeometry(1, 12, 1);
+const elevatedPillarGeometry = new THREE.BoxGeometry(1, 13, 1);
+
+// em cima da rampa de acesso (formato em U)
+floor(104, 11.75, -53 / 3, 8 / 3, 0.5, 8 / 3, 0, castelo, setDefaultMaterial("#ff1744"));
+floor(1205 / 12, 11.75, -46 / 3, 59 / 6, 0.5, 2, 0, castelo, setDefaultMaterial("#d500f9"));
+floor(94.5, 11.75, -50 / 3, 2, 0.5, 14 / 3, 0, castelo, setDefaultMaterial("#c51162"));
+
+// encostando na parede afundada
+floor(86.5, 11.75, -20, 9, 0.5, 2, 0, castelo, purpleMaterial);
+floor(92.25, 11.75, -18, 6.5, 0.5, 2, 0, castelo, setDefaultMaterial("#f50057"));
+floor(80, 11.75, -18, 8, 0.5, 2, 0, castelo, setDefaultMaterial("#6200ea"));
+
+// frente do castelo, contornando a torre da entrada
+floor(74, 11.75, 10, null, null, null, 0, castelo, greenMaterial, frontPlatformGeometry);
+floor(78.25, 11.75, 5.25, null, null, null, 0, castelo, setDefaultMaterial("#00bfa5"), entrancePlatformGeometry);
+floor(80.25, 11.75, -1, 2.5, 0.5, 11, 0, castelo, setDefaultMaterial("#00b8d4"));
+floor(78.25, 11.75, -5.25, null, null, null, 0, castelo, setDefaultMaterial("#0091ea"), entrancePlatformGeometry);
+floor(74, 11.75, -10, null, null, null, 0, castelo, blueMaterial, frontPlatformGeometry);
+
+// direita do castelo, considerando a entrada
+floor(107.5, 12.75, 18, 15, 0.5, 2, 0, castelo, limeMaterial);
+floor(86.58, 11.75, 18, 21.16, 0.5, 2, 0, castelo, brightGreenMaterial);
+
+// fundo do castelo + conexão com o início da passarela
+floor(117, 11.75, -7.92, 2, 0.5, 16.16, 0, castelo, orangeMaterial);
+floor(117, 12.75, 9.5, 2, 0.5, 13, 0, castelo, yellowMaterial);
+floor(661 / 6, 11.75, -18, 29 / 3, 0.5, 2, 0, castelo, setDefaultMaterial("#ff6d00"));
+
+const inclinedPlatformLength = 3.15;
+const inclinedPlatformWidth = 2;
+const inclinedPlatformMaterial = setDefaultMaterial("red");
+const inclinedPlatformGeometry = new THREE.BoxGeometry(
+    inclinedPlatformLength + 2 * ZF,
+    0.5,
+    inclinedPlatformWidth + 2 * ZF
+);
+
+function inclinedPlatform(x, y, z, angleZ, rotationY) {
     const platform = floor(
-        (xMin + xMax) / 2, height - 0.25, (zMin + zMax) / 2,
-        xMax - xMin, 0.5, zMax - zMin, 0, "gray", castelo
+        0, 0, 0, null, null, null, 0,
+        castelo, inclinedPlatformMaterial, inclinedPlatformGeometry
     );
+
+    platform.position.set(x, y, z);
+    platform.rotation.set(0, rotationY, angleZ);
+
+    platform.translateX(inclinedPlatformLength / 2);
+    platform.translateY(-0.25);
+
     platform.userData.walkable = true;
 }
 
-function createCurvedPlatform(centerX, centerZ, startAngle, endAngle, height = 12) {
+// passarelas inclinadas
+inclinedPlatform(117, 11.99, 0, degreesToRadians(18.85), degreesToRadians(-90));
+inclinedPlatform(97, 11.99, 18, degreesToRadians(18.85), 0);
+
+// PILARES DA PASSARELA
+wall(86.5, 6, -20, null, null, null, 0, castelo, purpleMaterial, pillarGeometry);
+// frente do castelo, esquerda e direita (pov do fundo do castelo pra frente)
+wall(74, 6, 10, null, null, null, 0, castelo, greenMaterial, pillarGeometry);
+wall(74, 6, -10, null, null, null, 0, castelo, blueMaterial, pillarGeometry);
+// atras da casa alta
+wall(107.5, 6.5, 18, null, null, null, 0, castelo, limeMaterial, elevatedPillarGeometry);
+// direita do castelo
+wall(86.58, 6, 18, null, null, null, 0, castelo, brightGreenMaterial, pillarGeometry);
+// fundo do castelo, esquerda e direita
+wall(117, 6, -7.92, null, null, null, 0, castelo, orangeMaterial, pillarGeometry);
+wall(117, 6.5, 4.5, null, null, null, 0, castelo, yellowMaterial, elevatedPillarGeometry);
+
+function curvedPlatform(centerX, centerZ, startAngle, endAngle, height = 12) {
     const innerRadius = 4.4;
     const outerRadius = 7.5;
     const segments = 12;
@@ -172,32 +215,14 @@ function createCurvedPlatform(centerX, centerZ, startAngle, endAngle, height = 1
     castelo.add(platform);
 }
 
-// Plataformas em arco ao redor das quatro torres de canto.
-createCurvedPlatform(119, -20, degreesToRadians(102), degreesToRadians(168));
-createCurvedPlatform(119, 20, degreesToRadians(192), degreesToRadians(258), 13);
-createCurvedPlatform(72, 20, degreesToRadians(282), degreesToRadians(348));
-createCurvedPlatform(72, -20, degreesToRadians(12), degreesToRadians(78));
+// PASSARELA DE CANTO (TORRES CILINDRICAS)
+curvedPlatform(119, -20, degreesToRadians(102), degreesToRadians(168));
+curvedPlatform(119, 20, degreesToRadians(192), degreesToRadians(258), 13);
+curvedPlatform(72, 20, degreesToRadians(282), degreesToRadians(348));
+curvedPlatform(72, -20, degreesToRadians(12), degreesToRadians(78));
 
-function createInclinedWalkway(x, y, z, run, rise, width, rotationY) {
-    const slopeLength = Math.hypot(run, rise);
-    const walkway = floor(0, 0, 0, slopeLength, 0.5, width, 0, "gray", castelo);
-    walkway.rotation.set(0, rotationY, Math.atan2(rise, run));
-
-    const direction = new THREE.Vector3(1, 0, 0).applyEuler(walkway.rotation);
-    const normal = new THREE.Vector3(0, 1, 0).applyEuler(walkway.rotation);
-    walkway.position.set(x, y, z)
-        .addScaledVector(direction, slopeLength / 2)
-        .addScaledVector(normal, -0.25);
-    walkway.translateY(2 * ZF);
-    walkway.userData.walkable = true;
-}
-
-// Transicoes entre os trechos normal e elevado, sem degraus intransponiveis.
-createInclinedWalkway(117, 12, 0, 3, 1, 2, degreesToRadians(-90));
-createInclinedWalkway(97, 12, 18, 3, 1, 2, 0);
-
-// Sobe do teto da casa menor ate a passarela elevada do castelo.
-ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "gray", castelo);
+// sobe do teto da casa ate a passarela elevada do castelo
+ramp(110, 37 / 3, 15, 2, 2 / 3, 2, degreesToRadians(-90), "gray", castelo, material);
 
 castelo.add(westWalls);
 
