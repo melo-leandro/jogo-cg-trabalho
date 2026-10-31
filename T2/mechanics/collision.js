@@ -162,3 +162,10 @@ export function rayIntersectsColliders(origin, direction, distance, colliders) {
   raycaster.far = distance;
   return raycaster.intersectObjects(colliders, false).length > 0;
 }
+
+export function raycastClosestCollider(origin, direction, distance, colliders) {
+  updateDynamicColliders(colliders);
+  raycaster.set(origin, direction);
+  raycaster.far = distance;
+  return raycaster.intersectObjects(colliders, true)[0] ?? null;
+}

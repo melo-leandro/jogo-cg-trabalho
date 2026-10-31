@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { setDefaultMaterial } from "../libs/util/util.js";
-import { rayIntersectsColliders } from "./collision.js";
+import { raycastClosestCollider } from "./collision.js";
 
 const VEL_PROJETIL = 100;
 const DIST_MAX = 100;
@@ -30,7 +30,7 @@ export function atirar(scene, camera, ponta){
     projeteis.push({ mesh: bala, direcao: direction, distanciaPercorrida: 0 });
 }
 
-export function atualizarProjeteis(delta, scene, wallCollisions) {
+export function atualizarProjeteis(delta, scene, wallCollisions, enemySystem) {
     tempoDecorrido += delta;
 
     for (let i = projeteis.length - 1; i >= 0; i--) {
@@ -38,20 +38,28 @@ export function atualizarProjeteis(delta, scene, wallCollisions) {
 
         const passo = VEL_PROJETIL * delta;
 
-        const bateuNaParede = rayIntersectsColliders(
+        const wallHit = raycastClosestCollider(
             p.mesh.position,
             p.direcao,
             passo,
             wallCollisions
         );
+        const enemyHit = raycastClosestCollider(
+            p.mesh.position,
+            p.direcao,
+            passo,
+            enemySystem.colliders.filter((collider) => collider.visible)
+        );
+        if (enemyHit && (!wallHit || enemyHit.distance <= wallHit.distance)) {
+            enemySystem.damageEnemy(enemyHit.object.userData.enemy);
+        }
         p.mesh.position.addScaledVector(p.direcao, passo);
         p.distanciaPercorrida += passo;
         const passouDistancia = p.distanciaPercorrida > DIST_MAX;
 
-        if (bateuNaParede || passouDistancia) {
+        if (wallHit || enemyHit || passouDistancia) {
             scene.remove(p.mesh);
             projeteis.splice(i, 1);
         }
     }
 }
-

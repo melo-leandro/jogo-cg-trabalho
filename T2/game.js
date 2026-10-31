@@ -13,8 +13,11 @@ import { castleDoors } from "./models/doors.js";
 import { shortHouseDoors } from "./models/shortHouse.js";
 import { tallHouseDoors } from "./models/tallHouse.js";
 import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
+import { createEnemies } from "./mechanics/enemies.js";
 
 const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight } = createWorld();
+const enemySystem = createEnemies(scene, wallCollisions);
+playerCollisions.push(...enemySystem.colliders);
 restoreCamera(camera);
 window.addEventListener("pagehide", () => saveCamera(camera));
 
@@ -99,6 +102,7 @@ function render() {
   }
 
   doorInteraction(doorGroups, camera);
+  enemySystem.update(delta, camera);
 
   for (const doorGroup of doorGroups) {
     for (const [door, openRotation, animationSpeed = 0.05] of doorGroup.doors) {
@@ -106,7 +110,7 @@ function render() {
     }
   }
 
-  atualizarProjeteis(delta, scene, wallCollisions);
+  atualizarProjeteis(delta, scene, wallCollisions, enemySystem);
   renderer.render(scene, camera);
   requestAnimationFrame(render);
 }
