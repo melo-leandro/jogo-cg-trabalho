@@ -136,7 +136,7 @@ function render() {
   portalMechanics.atualizar(delta, camera, !isInOrbitMode() && !isBuildCameraEnabled());
 
   hud.setReloadProgress(atualizarBesta(delta, besta, camera));
-  atualizarProjeteis(delta, scene, boltColliders);
+  atualizarProjeteis(delta, scene, boltColliders, enemySystem.targets);
   renderWithWeapon(renderer, scene, camera, arma);
   requestAnimationFrame(render);
 }

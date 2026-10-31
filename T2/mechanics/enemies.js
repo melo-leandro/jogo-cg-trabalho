@@ -49,7 +49,7 @@ const raycaster = new THREE.Raycaster();
 const movement = new THREE.Vector3();
 const nextPosition = new THREE.Vector3();
 const FADE_DURATION = 0.8;
-const ENEMY_LIGHT_INTENSITY = 40;
+const ENEMY_LIGHT_INTENSITY = 30;
 
 function createHealthBar() {
   const bar = new THREE.Group();
@@ -72,7 +72,7 @@ function createHealthBar() {
   return bar;
 }
 
-function createEnemy(definition) {
+function createEnemy(definition, onHit) {
   const enemy = {
     health: definition.type === "cylinder" ? 5 : 3,
     maxHealth: definition.type === "cylinder" ? 5 : 3,
@@ -112,15 +112,20 @@ function createEnemy(definition) {
 
   enemy.body = body;
   enemy.healthBar = healthBar;
+  enemy.light = light;
+  enemy.group.userData.aoSerAtingido = (damage) => {
+    onHit(enemy, damage);
+  };
   enemy.group.add(body, light, healthBar);
+  enemy.fadeMeshes = [];
+  enemy.group.traverse((object) => {
+    if (object.isMesh) enemy.fadeMeshes.push(object);
+  });
   enemy.group.position.set(...definition.position);
   return enemy;
 }
 
 export function createEnemies(scene, wallCollisions) {
-  const enemies = enemyDefinitions.map(createEnemy);
-  for (const enemy of enemies) scene.add(enemy.group);
-
   function damageEnemy(enemy, damage = 1) {
     if (!enemy?.alive || enemy.dying) return false;
 
@@ -137,18 +142,24 @@ export function createEnemies(scene, wallCollisions) {
     return true;
   }
 
+  const enemies = enemyDefinitions.map((definition) => createEnemy(definition, damageEnemy));
+  for (const enemy of enemies) scene.add(enemy.group);
+  const colliders = enemies.map((enemy) => enemy.body);
+  const targets = enemies.map((enemy) => enemy.group);
+
   function update(delta, camera) {
     for (const enemy of enemies) {
       if (enemy.dying) {
         enemy.fadeTime += delta;
         const opacity = Math.max(0, 1 - enemy.fadeTime / FADE_DURATION);
-        enemy.group.traverse((object) => {
-          if (object.isMesh) object.material.opacity = opacity;
-        });
-        const light = enemy.group.children.find((child) => child.isPointLight);
-        if (light) light.intensity = ENEMY_LIGHT_INTENSITY * opacity;
-        if (opacity === 0) {
-          enemy.group.visible = false;
+        for (const mesh of enemy.fadeMeshes) mesh.material.opacity = opacity;
+        enemy.light.intensity = ENEMY_LIGHT_INTENSITY * opacity;
+        if (enemy.fadeTime >= FADE_DURATION) {
+          enemy.group.removeFromParent();
+          const colliderIndex = colliders.indexOf(enemy.body);
+          if (colliderIndex !== -1) colliders.splice(colliderIndex, 1);
+          const targetIndex = targets.indexOf(enemy.group);
+          if (targetIndex !== -1) targets.splice(targetIndex, 1);
           enemy.dying = false;
         }
         continue;
@@ -201,7 +212,8 @@ export function createEnemies(scene, wallCollisions) {
 
   return {
     enemies,
-    colliders: enemies.map((enemy) => enemy.body),
+    colliders,
+    targets,
     damageEnemy,
     update
   };

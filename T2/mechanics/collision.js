@@ -59,6 +59,7 @@ function findWallHit(position, direction, distance, colliders) {
       raycaster.set(origin, direction);
 
       for (const hit of raycaster.intersectObjects(colliders, false)) {
+        if (hit.object.userData.ignoreCollision) continue;
         normal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld);
 
         if (Math.abs(normal.y) >= 0.5 || normal.dot(direction) >= 0) continue;
