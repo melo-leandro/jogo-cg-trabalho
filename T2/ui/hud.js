@@ -57,6 +57,7 @@ export function createHud(camera) {
   controlsBox.add("Câmera orbital: C");
   controlsBox.add("Modo construção: B");
   controlsBox.add("Dia/noite: H");
+  controlsBox.add("Todas as chaves: K");
   controlsBox.show();
 
   const orbitControlsBox = new InfoBox();
@@ -81,7 +82,31 @@ export function createHud(camera) {
     maxWidth: "calc(100vw - 20px)"
   });
 
-  let buildMessageTimeout;
+  let messageTimeout;
+
+  function showMessage(text) {
+    clearTimeout(messageTimeout);
+    buildModeBox.infoBox.innerHTML = "";
+    buildModeBox.add(text);
+    buildModeBox.show();
+
+    messageTimeout = setTimeout(() => buildModeBox.infoBox.remove(), 2500);
+  }
+
+  // chaves carregadas pelo jogador (canto inferior esquerdo)
+  const keysPanel = document.createElement("div");
+  Object.assign(keysPanel.style, {
+    position: "fixed",
+    left: "10px",
+    bottom: "10px",
+    padding: "8px 12px",
+    background: "rgba(0, 0, 0, 0.55)",
+    color: "white",
+    font: "14px sans-serif",
+    borderRadius: "6px",
+    pointerEvents: "none"
+  });
+  document.body.appendChild(keysPanel);
 
   return {
     setCrosshairVisible(visible) {
@@ -104,12 +129,21 @@ export function createHud(camera) {
     },
 
     showBuildMode(isBuildMode) {
-      clearTimeout(buildMessageTimeout);
-      buildModeBox.infoBox.innerHTML = "";
-      buildModeBox.add(isBuildMode ? "Modo construção ativado" : "Modo construção desativado");
-      buildModeBox.show();
+      showMessage(isBuildMode ? "Modo construção ativado" : "Modo construção desativado");
+    },
 
-      buildMessageTimeout = setTimeout(() => buildModeBox.infoBox.remove(), 2000);
+    showMessage,
+
+    // carried: chaves com o jogador; placed: esferas já nos pedestais
+    setKeys(carried, placed, total = 4) {
+      const slots = Array.from({ length: total }, (_, i) =>
+        `<span style="display:inline-block;width:14px;height:14px;margin-left:5px;border-radius:50%;` +
+        (i < carried
+          ? `background:#ffc94a;box-shadow:0 0 6px #ffc94a;"></span>`
+          : `border:2px solid rgba(255,255,255,0.45);box-sizing:border-box;"></span>`)
+      ).join("");
+      keysPanel.innerHTML = `Chaves:${slots}<div style="font-size:12px;opacity:0.75;margin-top:4px">` +
+        `Nos pedestais: ${placed}/${total}</div>`;
     }
   };
 }
