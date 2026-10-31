@@ -9,6 +9,7 @@ import { tallHouse } from "../models/tallHouse.js";
 import { shortHouse } from "../models/shortHouse.js";
 import { createWallCollision } from "../mechanics/collision.js";
 import { bridge } from "../models/bridge.js";
+import { criarPortal } from "../models/portal.js";
 
 export function createDayNightLighting(scene, renderer) {
   const mainLight = new THREE.DirectionalLight();
@@ -101,16 +102,21 @@ export function createWorld() {
   }
   foundation.traverse((object) => { object.castShadow = false; });
 
+  const portal = criarPortal();
+  portal.grupo.position.set(castleCenterX - 25, 0, 40);
+  castleArea.add(portal.grupo);
+
   window.addEventListener("resize", () => onWindowResize(camera, renderer));
 
-  const collisionObjects = [bridge, castelo, tallHouse, shortHouse];
+  const collisionObjects = [bridge, castelo, tallHouse, shortHouse, portal.grupo];
   return {
     scene,
     renderer,
     camera,
-    grounds: [ground, courtyard, bridge, tallHouse, castelo, shortHouse],
+    grounds: [ground, courtyard, bridge, tallHouse, castelo, shortHouse, portal.grupo],
     wallCollisions: createWallCollision(collisionObjects),
     playerCollisions: createWallCollision(collisionObjects, true),
-    toggleDayNight
+    toggleDayNight,
+    portal
   };
 }

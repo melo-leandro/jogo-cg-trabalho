@@ -14,8 +14,10 @@ import { castleDoors } from "./models/doors.js";
 import { shortHouseDoors } from "./models/shortHouse.js";
 import { tallHouseDoors } from "./models/tallHouse.js";
 import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
+import { aoMudarChaves, alternarTodasAsChaves, TOTAL_CHAVES } from "./mechanics/keys.js";
+import { criarMecanicaPortal } from "./mechanics/portalMechanics.js";
 
-const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight } = createWorld();
+const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight, portal } = createWorld();
 restoreCamera(camera);
 window.addEventListener("pagehide", () => saveCamera(camera));
 // o dardo crava em paredes, pisos e também no chão
@@ -36,6 +38,20 @@ hud.setCrosshairVisible(!buildModeEnabled);
 
 window.addEventListener("keydown", (event) => {
   if (event.code === "KeyH" && !event.repeat) toggleDayNight();
+});
+
+// chaves e portal
+aoMudarChaves((carregadas, colocadas) => hud.setKeys(carregadas, colocadas, TOTAL_CHAVES));
+const portalMechanics = criarMecanicaPortal(portal, {
+  aoColocarEsfera: (colocadas, total) => hud.showMessage(`Esfera colocada no pedestal (${colocadas}/${total})`),
+  aoAbrir: () => hud.showMessage("O portal se abriu!")
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.code !== "KeyK" || event.repeat) return;
+
+  const ativo = alternarTodasAsChaves();
+  hud.showMessage(ativo ? "Todas as chaves recebidas" : "Chaves anteriores restauradas");
 });
 
 window.addEventListener("keydown", (event) => {
@@ -111,6 +127,8 @@ function render() {
       doorLerping(door, doorGroup.isOpen ? openRotation : 0, animationSpeed);
     }
   }
+
+  portalMechanics.atualizar(delta, camera, !isInOrbitMode() && !isBuildCameraEnabled());
 
   hud.setReloadProgress(atualizarBesta(delta, besta, camera));
   atualizarProjeteis(delta, scene, boltColliders);
