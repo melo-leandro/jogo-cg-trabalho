@@ -51,6 +51,7 @@ export function createWorld() {
     scene,
     renderer,
     camera,
+    ground,
     grounds: [ground, tallHouse, castelo, shortHouse],
     wallCollisions: createWallCollision([castelo, tallHouse, shortHouse])
   };
