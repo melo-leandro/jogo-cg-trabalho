@@ -22,7 +22,7 @@ const Y_CORDA = 0.006;
 const Z_CORDA_ARMADA = -0.006;
 
 const materiais = {
-    madeira: new THREE.MeshLambertMaterial({ map: criarTexturaMadeira() }),
+    madeira: setDefaultMaterial("#6e4527"),
     madeiraEscura: setDefaultMaterial("#4a2d18"),
     osso: setDefaultMaterial("#e4d8bc"),
     ferro: setDefaultMaterial("#555a61"),
@@ -31,45 +31,6 @@ const materiais = {
     corda: setDefaultMaterial("#d9caa0"),
     amarracao: setDefaultMaterial("#7a6345")
 };
-
-// veios da madeira gerados num canvas
-function criarTexturaMadeira() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 512;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#6e4527";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    let semente = 7;
-    const aleatorio = () => (semente = (semente * 16807) % 2147483647) / 2147483647;
-
-    for (let i = 0; i < 90; i++) {
-        const y = aleatorio() * canvas.height;
-        const amplitude = 1 + aleatorio() * 3;
-        const frequencia = 0.004 + aleatorio() * 0.01;
-        const fase = aleatorio() * Math.PI * 2;
-        const claro = aleatorio() < 0.35;
-        ctx.strokeStyle = claro
-            ? `rgba(150, 100, 60, ${0.15 + aleatorio() * 0.2})`
-            : `rgba(40, 22, 10, ${0.15 + aleatorio() * 0.3})`;
-        ctx.lineWidth = 0.6 + aleatorio() * 1.6;
-        ctx.beginPath();
-        for (let x = 0; x <= canvas.width; x += 8) {
-            const yy = y + Math.sin(x * frequencia + fase) * amplitude;
-            if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
-        }
-        ctx.stroke();
-    }
-
-    const textura = new THREE.CanvasTexture(canvas);
-    textura.colorSpace = THREE.SRGBColorSpace;
-    textura.wrapS = THREE.RepeatWrapping;
-    textura.wrapT = THREE.RepeatWrapping;
-    textura.repeat.set(1.2, 3);
-    textura.anisotropy = 4;
-    return textura;
-}
 
 export function criarArma(camera) {
     const pivo = new THREE.Group();// posição/rotação de repouso na tela + animações
@@ -114,11 +75,8 @@ export function criarArma(camera) {
 
     return {
         arma: pivo,
-        posicaoBase: POSICAO_NA_TELA.clone(),
-        rotacaoBase: ROTACAO_NA_TELA.clone(),
         modelo,
         dardoCarregado,
-        posicaoDardo,
         setTensaoCorda
     };
 }

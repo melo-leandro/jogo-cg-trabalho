@@ -5,10 +5,8 @@ import { firstColliderHit } from "./collision.js";
 
 // ---- parâmetros do disparo ----
 const VELOCIDADE_DARDO = 80; // unidades/s
-const GRAVIDADE_DARDO = 6; // queda leve; a mira compensa
 const ALCANCE_MAXIMO = 260;
 const TEMPO_RECARGA = 1.1; // segundos entre um disparo e o próximo
-const GIRO_DARDO = 14; // rad/s em torno do próprio eixo 
 const TEMPO_CRAVADO = 12; // segundos que o dardo fica cravado na parede
 const MAX_CRAVADOS = 30;
 const DANO_DARDO = 1;
@@ -17,12 +15,8 @@ const comprimentoDardo = COMPRIMENTO_DARDO * ESCALA_ARMA;
 
 let tempoDecorrido = 0;
 let ultimoTiro = -Infinity;
-let recuo = 0; // 1 logo após o disparo, decai até 0
-let faseBalanco = 0; //balanço da arma ao andar.
-let amplitudeBalanco = 0;
-const posicaoAnteriorCamera = new THREE.Vector3();
 
-const voando = []; //{dardo, velocidade, distancia, giro }
+const voando = []; //{dardo, direcao, distancia }
 const cravados = []; //{dardo, tempo }
 
 const raycaster = new THREE.Raycaster();
@@ -38,7 +32,6 @@ export function progressoRecarga() {
 export function atirar(scene, camera, besta, colisores) {
     if (progressoRecarga() < 1) return false;
     ultimoTiro = tempoDecorrido;
-    recuo = 1;
 
     const dardo = criarDardo();
     dardo.scale.setScalar(ESCALA_ARMA);
@@ -55,15 +48,15 @@ export function atirar(scene, camera, besta, colisores) {
     const acertoMira = firstColliderHit(camera.position, direcaoCamera, ALCANCE_MAXIMO, colisores);
     if (acertoMira && acertoMira.distance > 4) pontoMirado.copy(acertoMira.point);
 
-    const velocidade = acertoMira && acertoMira.distance <= 4
-        ? direcaoCamera.clone().multiplyScalar(VELOCIDADE_DARDO)
-        : velocidadeParaAcertar(dardo.position, pontoMirado, Boolean(acertoMira));
-    const direcao = velocidade.clone().normalize();
+    // o dardo sai da besta (à direita) em linha reta até o ponto sob a mira
+    const direcao = acertoMira && acertoMira.distance <= 4
+        ? direcaoCamera
+        : pontoMirado.clone().sub(dardo.position).normalize();
 
-    orientar(dardo, direcao, 0);
+    orientar(dardo, direcao);
     scene.add(dardo);
 
-    const projetil = { dardo, velocidade, distancia: 0, giro: 0 };
+    const projetil = { dardo, direcao, distancia: 0 };
 
     // se o jogador estiver colado numa parede, a ponta do dardo já nasce do outro lado dela
     pontaDoDardo(dardo, direcao, auxPonta);
@@ -71,7 +64,7 @@ export function atirar(scene, camera, besta, colisores) {
     const distanciaAtePonta = auxDirecao.length();
     const obstaculo = firstColliderHit(camera.position, auxDirecao.normalize(), distanciaAtePonta, colisores);
     if (obstaculo) {
-        cravar(projetil, obstaculo, direcao);
+        cravar(projetil, obstaculo);
     } else {
         voando.push(projetil);
     }
@@ -83,14 +76,12 @@ export function atualizarProjeteis(delta, scene, colisores, alvos = []) {
     for (let i = voando.length - 1; i >= 0; i--) {
         const p = voando[i];
 
-        p.velocidade.y -= GRAVIDADE_DARDO * delta;
-        const passo = p.velocidade.length() * delta;
-        auxDirecao.copy(p.velocidade).normalize();
+        const passo = VELOCIDADE_DARDO * delta;
 
         // o raio sai da ponta do dardo, na direção do movimento
-        pontaDoDardo(p.dardo, auxDirecao, auxPonta);
-        const acertoParede = firstColliderHit(auxPonta, auxDirecao, passo, colisores);
-        const acertoAlvo = alvos.length > 0 ? acertoEmAlvos(auxPonta, auxDirecao, passo, alvos) : null;
+        pontaDoDardo(p.dardo, p.direcao, auxPonta);
+        const acertoParede = firstColliderHit(auxPonta, p.direcao, passo, colisores);
+        const acertoAlvo = alvos.length > 0 ? acertoEmAlvos(auxPonta, p.direcao, passo, alvos) : null;
 
         if (acertoAlvo && (!acertoParede || acertoAlvo.distance < acertoParede.distance)) {
             acertoAlvo.receptor.userData.aoSerAtingido(DANO_DARDO, acertoAlvo.point);
@@ -100,15 +91,13 @@ export function atualizarProjeteis(delta, scene, colisores, alvos = []) {
         }
 
         if (acertoParede) {
-            cravar(p, acertoParede, auxDirecao);
+            cravar(p, acertoParede);
             voando.splice(i, 1);
             continue;
         }
 
-        p.dardo.position.addScaledVector(auxDirecao, passo);
+        p.dardo.position.addScaledVector(p.direcao, passo);
         p.distancia += passo;
-        p.giro += GIRO_DARDO * delta;
-        orientar(p.dardo, auxDirecao, p.giro);
 
         if (p.distancia > ALCANCE_MAXIMO) {
             p.dardo.removeFromParent();
@@ -125,77 +114,36 @@ export function atualizarProjeteis(delta, scene, colisores, alvos = []) {
     }
 }
 
-export function atualizarBesta(delta, besta, camera) {
+export function atualizarBesta(delta, besta) {
     tempoDecorrido += delta;
     const p = progressoRecarga();
 
-    // solta carga logo apos o tiro, volta a ser armada no meio da recarga.
+    // corda solta logo após o tiro, volta a ser armada durante a recarga
     besta.setTensaoCorda(THREE.MathUtils.smoothstep(p, 0.25, 0.7));
 
-    // novo dardo: aparece acima do sulco e desce até encaixar na corda
-    const encaixe = THREE.MathUtils.smoothstep(p, 0.72, 0.97);
-    besta.dardoCarregado.visible = p >= 0.72;
-    besta.dardoCarregado.position.copy(besta.posicaoDardo);
-    besta.dardoCarregado.position.y += 0.05 * (1 - encaixe);
-    besta.dardoCarregado.position.z += 0.07 * (1 - encaixe);
-
-    //recuo amortecido
-    recuo *= Math.exp(-9 * delta);
-
-    // ao recarregar, a besta abaixa e inclina (o jogador puxa a corda)
-    const armando = Math.sin(Math.PI * THREE.MathUtils.smoothstep(p, 0.12, 0.85));
-
-    //balanço proporcional à velocidade horizontal do jogador
-    const dx = camera.position.x - posicaoAnteriorCamera.x;
-    const dz = camera.position.z - posicaoAnteriorCamera.z;
-    const velocidade = delta > 0 ? Math.hypot(dx, dz) / delta : 0;
-    posicaoAnteriorCamera.copy(camera.position);
-    const alvoAmplitude = Math.min(velocidade / 15, 1.6);
-    amplitudeBalanco += (alvoAmplitude - amplitudeBalanco) * Math.min(1, 8 * delta);
-    faseBalanco += delta * (4 + velocidade * 0.35);
-
-    const pivo = besta.arma;
-    pivo.position.set(
-        besta.posicaoBase.x + Math.cos(faseBalanco) * 0.025 * amplitudeBalanco,
-        besta.posicaoBase.y - Math.abs(Math.sin(faseBalanco)) * 0.03 * amplitudeBalanco - 0.22 * armando,
-        besta.posicaoBase.z + 0.2 * recuo
-    );
-    pivo.rotation.set(
-        besta.rotacaoBase.x + 0.14 * recuo - 0.45 * armando,
-        besta.rotacaoBase.y,
-        besta.rotacaoBase.z + 0.25 * armando
-    );
+    // o novo dardo aparece quando a recarga termina
+    besta.dardoCarregado.visible = p >= 1;
 
     return p;
 }
 
 // ---- auxiliares ----
-function velocidadeParaAcertar(origem, alvo, compensarQueda) {
-    const velocidade = alvo.clone().sub(origem).normalize().multiplyScalar(VELOCIDADE_DARDO);
-    if (compensarQueda) {
-        const tempoDeVoo = origem.distanceTo(alvo) / VELOCIDADE_DARDO;
-        velocidade.y += GRAVIDADE_DARDO * tempoDeVoo / 2;
-    }
-    return velocidade;
-}
-
-function orientar(dardo, direcao, giro) {
+function orientar(dardo, direcao) {
     // o dardo foi modelado com a ponta em +Z; lookAt aponta +Z para o alvo
     auxAlvo.copy(dardo.position).add(direcao);
     dardo.lookAt(auxAlvo);
-    dardo.rotateZ(giro);
 }
 
 function pontaDoDardo(dardo, direcao, destino) {
     return destino.copy(dardo.position).addScaledVector(direcao, comprimentoDardo);
 }
 
-function cravar(projetil, acerto, direcao) {
-    const { dardo } = projetil;
+function cravar(projetil, acerto) {
+    const { dardo, direcao } = projetil;
     // a ponta e parte da haste entram na superfície
     const penetracao = comprimentoDardo * 0.22;
     dardo.position.copy(acerto.point).addScaledVector(direcao, penetracao - comprimentoDardo);
-    orientar(dardo, direcao, projetil.giro);
+    orientar(dardo, direcao);
 
     // preso ao objeto atingido: se for uma porta, o dardo acompanha a porta
     acerto.object.getWorldScale(auxEscala);
