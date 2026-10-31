@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import {
   createGroundPlaneXZ,
-  initDefaultBasicLight,
   initRenderer,
   onWindowResize
 } from "../libs/util/util.js";
@@ -10,21 +9,64 @@ import { tallHouse } from "../models/tallHouse.js";
 import { shortHouse } from "../models/shortHouse.js";
 import { createWallCollision } from "../mechanics/collision.js";
 
+export function createDayNightLighting(scene, renderer) {
+  const mainLight = new THREE.DirectionalLight();
+  mainLight.castShadow = true;
+  mainLight.shadow.mapSize.set(2048, 2048);
+  mainLight.shadow.camera.near = 100;
+  mainLight.shadow.camera.far = 1000;
+  mainLight.shadow.camera.left = -300;
+  mainLight.shadow.camera.right = 300;
+  mainLight.shadow.camera.bottom = -300;
+  mainLight.shadow.camera.top = 300;
+  mainLight.shadow.bias = -0.0005;
+  mainLight.shadow.normalBias = 0.3;
+
+  const fillLight = new THREE.HemisphereLight();
+  scene.add(mainLight, fillLight);
+
+  let isNight = false;
+
+  renderer.setClearColor("#87ceeb");
+  mainLight.color.set("#fff4d6");
+  mainLight.intensity = 2.2;
+  mainLight.position.set(-300, 500, 300);
+  fillLight.color.set("#b1e1ff");
+  fillLight.groundColor.set("#3d4b32");
+  fillLight.intensity = 1.2;
+
+  function toggleDayNight() {
+    isNight = !isNight;
+
+    if (isNight) {
+      renderer.setClearColor("#07111f");
+      mainLight.color.set("#b7c9ff");
+      mainLight.intensity = 1.1;
+      mainLight.position.set(-300, 400, -300);
+      fillLight.color.set("#6177a6");
+      fillLight.groundColor.set("#172033");
+      fillLight.intensity = 0.75;
+    } else {
+      renderer.setClearColor("#87ceeb");
+      mainLight.color.set("#fff4d6");
+      mainLight.intensity = 2.2;
+      mainLight.position.set(-300, 500, 300);
+      fillLight.color.set("#b1e1ff");
+      fillLight.groundColor.set("#3d4b32");
+      fillLight.intensity = 1.2;
+    }
+
+    return isNight;
+  }
+
+  return toggleDayNight;
+}
+
 export function createWorld() {
   const scene = new THREE.Scene();
   const castleCenterX = 286.5;
   const renderer = initRenderer("rgb(135, 206, 235)");
-  const sun = initDefaultBasicLight(
-    scene,
-    true,
-    new THREE.Vector3(-300, 500, 300),
-    600,
-    2048,
-    100,
-    1000
-  );
-  sun.shadow.bias = -0.0005;
-  sun.shadow.normalBias = 0.3;
+  const toggleDayNight = createDayNightLighting(scene, renderer);
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(120 - castleCenterX, 4, 0);
@@ -52,6 +94,7 @@ export function createWorld() {
     renderer,
     camera,
     grounds: [ground, tallHouse, castelo, shortHouse],
-    wallCollisions: createWallCollision([castelo, tallHouse, shortHouse])
+    wallCollisions: createWallCollision([castelo, tallHouse, shortHouse]),
+    toggleDayNight
   };
 }

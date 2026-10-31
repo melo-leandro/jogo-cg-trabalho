@@ -31,6 +31,7 @@ export function createHud(camera) {
   controlsBox.add("Atirar: Clique esquerdo/direito");
   controlsBox.add("Câmera orbital: C");
   controlsBox.add("Modo construção: B");
+  controlsBox.add("Dia/noite: H");
   controlsBox.show();
 
   const orbitControlsBox = new InfoBox();

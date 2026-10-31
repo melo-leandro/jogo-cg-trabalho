@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { restoreCamera, saveCamera } from "../cameraStorage.js";
 import { isBuildCameraEnabled, toggleBuildCamera } from "./controls/buildCamera.js";
 import { createPlayerControls } from "./controls/playerControls.js";
 import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.js";
@@ -13,7 +14,9 @@ import { shortHouseDoors } from "./models/shortHouse.js";
 import { tallHouseDoors } from "./models/tallHouse.js";
 import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
 
-const { scene, renderer, camera, grounds, wallCollisions } = createWorld();
+const { scene, renderer, camera, grounds, wallCollisions, toggleDayNight } = createWorld();
+restoreCamera(camera);
+window.addEventListener("pagehide", () => saveCamera(camera));
 
 const { controls, update: movePlayer } = createPlayerControls(
   camera,
@@ -26,6 +29,10 @@ const hud = createHud(camera);
 const buildModeEnabled = isBuildCameraEnabled();
 arma.visible = !buildModeEnabled;
 hud.setCrosshairVisible(!buildModeEnabled);
+
+window.addEventListener("keydown", (event) => {
+  if (event.code === "KeyH" && !event.repeat) toggleDayNight();
+});
 
 window.addEventListener("keydown", (event) => {
   if (event.code !== "KeyC" || event.repeat || isBuildCameraEnabled()) return;
