@@ -16,8 +16,12 @@ import { tallHouseDoors } from "./models/tallHouse.js";
 import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
 import { aoMudarChaves, alternarTodasAsChaves, TOTAL_CHAVES } from "./mechanics/keys.js";
 import { criarMecanicaPortal } from "./mechanics/portalMechanics.js";
+import { createEnemies } from "./mechanics/enemies.js";
 
 const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight, portal } = createWorld();
+
+const enemySystem = createEnemies(scene, wallCollisions);
+playerCollisions.push(...enemySystem.colliders);
 restoreCamera(camera);
 window.addEventListener("pagehide", () => saveCamera(camera));
 // o dardo crava em paredes, pisos e também no chão
@@ -121,6 +125,7 @@ function render() {
   }
 
   doorInteraction(doorGroups, camera);
+  enemySystem.update(delta, camera);
 
   for (const doorGroup of doorGroups) {
     for (const [door, openRotation, animationSpeed = 0.05] of doorGroup.doors) {

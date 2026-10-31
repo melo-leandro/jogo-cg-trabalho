@@ -163,3 +163,10 @@ export function firstColliderHit(origin, direction, distance, colliders) {
   raycaster.far = distance;
   return raycaster.intersectObjects(colliders, false)[0] ?? null;
 }
+
+export function raycastClosestCollider(origin, direction, distance, colliders) {
+  updateDynamicColliders(colliders);
+  raycaster.set(origin, direction);
+  raycaster.far = distance;
+  return raycaster.intersectObjects(colliders, true)[0] ?? null;
+}
