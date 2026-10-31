@@ -4,10 +4,11 @@ import {
   initRenderer,
   onWindowResize
 } from "../libs/util/util.js";
-import { castelo } from "../models/castle.js";
+import { castelo, foundation } from "../models/castle.js";
 import { tallHouse } from "../models/tallHouse.js";
 import { shortHouse } from "../models/shortHouse.js";
 import { createWallCollision } from "../mechanics/collision.js";
+import { bridge } from "../models/bridge.js";
 
 export function createDayNightLighting(scene, renderer) {
   const mainLight = new THREE.DirectionalLight();
@@ -75,17 +76,30 @@ export function createWorld() {
 
   // scene.add(new THREE.AxesHelper(12));
 
-  const ground = createGroundPlaneXZ(600, 600, 1, 1, "#328248");
-  ground.userData.walkable = true;
+  const ground = createGroundPlaneXZ(600, 600, 1, 1, "#29464a");
+  ground.matrix.setPosition(0, -3, 0);
   const castleArea = new THREE.Group();
   castleArea.position.x = -castleCenterX;
-  castleArea.add(castelo, tallHouse, shortHouse);
+  castleArea.add(bridge, castelo, tallHouse, shortHouse);
+  const courtyard = new THREE.Mesh(
+    new THREE.PlaneGeometry(141, 114),
+    new THREE.MeshLambertMaterial({
+      color: "#62922f", polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1
+    })
+  );
+  courtyard.rotation.x = -Math.PI / 2;
+  courtyard.position.set(castleCenterX, 0, 0);
+  castleArea.add(courtyard);
   scene.add(ground, castleArea);
   scene.traverse((object) => {
     if (!object.isMesh) return;
     object.castShadow = true;
     object.receiveShadow = true;
   });
+  for (const surface of bridge.children) {
+    surface.castShadow = !surface.userData.walkable && !surface.userData.ignoreCollision;
+  }
+  foundation.traverse((object) => { object.castShadow = false; });
 
   window.addEventListener("resize", () => onWindowResize(camera, renderer));
 
@@ -93,8 +107,8 @@ export function createWorld() {
     scene,
     renderer,
     camera,
-    grounds: [ground, tallHouse, castelo, shortHouse],
-    wallCollisions: createWallCollision([castelo, tallHouse, shortHouse]),
+    grounds: [ground, courtyard, bridge, tallHouse, castelo, shortHouse],
+    wallCollisions: createWallCollision([bridge, castelo, tallHouse, shortHouse]),
     toggleDayNight
   };
 }

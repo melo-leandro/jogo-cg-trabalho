@@ -1,11 +1,38 @@
 import * as THREE from 'three';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
-import { floor, ramp, wall, ZF } from "./tools.js";
+import { floor, ramp, wall, ZF, stoneMaterial } from "./tools.js";
 import { castleDoors, frontDoor } from "./doors.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("#65645D");
 material.side = THREE.DoubleSide;
+
+// FUNDAÇÃO
+
+function createCastleFoundation() {
+    const foundation = new THREE.Group();
+    for (const [x, z, width, depth] of [
+        [95.5, 0, 149 / 3, 42],
+        [85.5, -22, 35 / 3, 8 / 3],
+        [95, -21.5, 26 / 3, 17 / 3], [95, 21.5, 26 / 3, 17 / 3],
+        [120.5, 0, 17 / 3, 26 / 3],
+        [75, 0, 26 / 3, 26 / 3],
+        [71.5, -6, 11 / 3, 26 / 3], [71.5, 6, 11 / 3, 26 / 3],
+        [70.5, -4.5, 17 / 3, 14 / 3], [70.5, 4.5, 17 / 3, 14 / 3]
+    ]) {
+        wall(x, -0.75 - ZF / 3, z, width, 1.5, depth, 0, foundation, stoneMaterial);
+    }
+    const towerBaseGeometry = new THREE.CylinderGeometry(14.5 / 3, 14.5 / 3, 1.5, 32);
+    for (const [x, z] of [[72, -20], [72, 20], [119, -20], [119, 20]]) {
+        const base = new THREE.Mesh(towerBaseGeometry, stoneMaterial);
+        base.position.set(x, -0.75 - ZF / 3, z);
+        foundation.add(base);
+    }
+    return foundation;
+}
+
+const foundation = createCastleFoundation();
+castelo.add(foundation);
 
 // TORRES
 
@@ -439,4 +466,4 @@ createSmallCrown(119, 4); // 8
 castelo.scale.setScalar(3);
 castelo.add(frontDoor);
 
-export { backCastleDoors, castelo };
+export { backCastleDoors, castelo, foundation };

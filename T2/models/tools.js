@@ -6,6 +6,7 @@ import { setDefaultMaterial } from "../libs/util/util.js";
 // elas ficam meio que se alternando, ficando bem estranho
 // esse offset resolve
 export const ZF = 0.02;
+export const stoneMaterial = new THREE.MeshLambertMaterial({ color: "#858071" });
 
 export function wall(x, y, z, width, height, depth, rotationY, group, material = null, geometry = null) {
     validateGeometry(geometry, [width, height, depth]);
