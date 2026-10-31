@@ -20,7 +20,7 @@ export function jump() {
   isGrounded = false;
 }
 
-export function createWallCollision(objects) {
+export function createWallCollision(objects, forPlayer = false) {
   const meshes = [];
 
   for (const object of objects) {
@@ -28,7 +28,8 @@ export function createWallCollision(objects) {
     object.traverse((child) => {
       if (!child.isMesh || child.userData.ignoreCollision) return;
 
-      meshes.push(child);
+      const collider = forPlayer ? child.children.find(part => part.userData.playerCollider) : null;
+      meshes.push(collider ?? child);
     });
   }
 

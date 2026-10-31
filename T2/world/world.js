@@ -103,12 +103,14 @@ export function createWorld() {
 
   window.addEventListener("resize", () => onWindowResize(camera, renderer));
 
+  const collisionObjects = [bridge, castelo, tallHouse, shortHouse];
   return {
     scene,
     renderer,
     camera,
     grounds: [ground, courtyard, bridge, tallHouse, castelo, shortHouse],
-    wallCollisions: createWallCollision([bridge, castelo, tallHouse, shortHouse]),
+    wallCollisions: createWallCollision(collisionObjects),
+    playerCollisions: createWallCollision(collisionObjects, true),
     toggleDayNight
   };
 }

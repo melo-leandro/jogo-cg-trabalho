@@ -14,7 +14,7 @@ import { shortHouseDoors } from "./models/shortHouse.js";
 import { tallHouseDoors } from "./models/tallHouse.js";
 import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
 
-const { scene, renderer, camera, grounds, wallCollisions, toggleDayNight } = createWorld();
+const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight } = createWorld();
 restoreCamera(camera);
 window.addEventListener("pagehide", () => saveCamera(camera));
 
@@ -93,7 +93,7 @@ function render() {
     movePlayer(delta);
 
     if (!isBuildCameraEnabled()) {
-      wallCollision(camera, previousPosition, wallCollisions);
+      wallCollision(camera, previousPosition, playerCollisions);
       groundCollision(camera, grounds, delta);
     }
   }

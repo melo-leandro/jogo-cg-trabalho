@@ -2,10 +2,12 @@ import * as THREE from 'three';
 import {degreesToRadians, setDefaultMaterial} from "../libs/util/util.js";
 import { floor, ramp, wall, ZF, stoneMaterial } from "./tools.js";
 import { castleDoors, frontDoor } from "./doors.js";
+import { CSG } from "../libs/other/CSGMesh.js";
 
 let castelo = new THREE.Group();
 let material = setDefaultMaterial("#65645D");
 material.side = THREE.DoubleSide;
+const slitBorderMaterial = new THREE.MeshLambertMaterial({ color: "#55544e", side: THREE.DoubleSide });
 
 // FUNDAÇÃO
 
@@ -36,18 +38,85 @@ castelo.add(foundation);
 
 // TORRES
 
-let towerGeometry = new THREE.CylinderGeometry(4.5, 4.5, 18);
+function addArrowSlits(geometry, interiorGeometry, positions) {
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.15, -1.2);
+    shape.lineTo(0.15, -1.2);
+    shape.lineTo(0.15, 1.05);
+    shape.absarc(0, 1.05, 0.15, 0, Math.PI, false);
+    shape.closePath();
+    const slitGeometry = new THREE.ExtrudeGeometry(shape, {
+        depth: 2.2, bevelEnabled: false, curveSegments: 6
+    });
+    slitGeometry.translate(0, 0, -1.1);
+    const cutter = new THREE.Mesh(slitGeometry, material);
+    let solid = CSG.fromGeometry(geometry).subtract(CSG.fromGeometry(interiorGeometry));
+    const playerCollider = CSG.toMesh(solid, new THREE.Matrix4(), material);
+    playerCollider.visible = false;
+    playerCollider.userData.ignoreCollision = true;
+    playerCollider.userData.playerCollider = true;
+    for (const [x, y, z, angle] of positions) {
+        cutter.position.set(x, y, z);
+        cutter.rotation.y = angle;
+        cutter.updateMatrix();
+        solid = solid.subtract(CSG.fromMesh(cutter));
+    }
+    const result = CSG.toMesh(solid, new THREE.Matrix4(), material);
+    result.add(playerCollider);
+    const borderShape = new THREE.Shape(shape.getPoints(6).map(point =>
+        new THREE.Vector2(point.x * 1.5, point.y * 1.06)
+    ));
+    borderShape.holes.push(new THREE.Path(shape.getPoints(6)));
+    const borderGeometry = new THREE.ShapeGeometry(borderShape);
+    borderGeometry.translate(0, 0, 0.52);
+    for (const [x, y, z, angle] of positions) {
+        const border = new THREE.Mesh(borderGeometry, slitBorderMaterial);
+        border.name = 'slitBorder';
+        border.position.set(x, y, z);
+        border.rotation.y = angle;
+        border.userData.ignoreCollision = true;
+        result.add(border);
+    }
+    geometry.dispose();
+    interiorGeometry.dispose();
+    slitGeometry.dispose();
+    return result;
+}
 
-function cylinderTower(x, z) {
-    let tower = new THREE.Mesh(towerGeometry, material);
+function cylinderTower(x, z, slits) {
+    const positions = slits.map(([height, degrees]) => {
+        const angle = degreesToRadians(degrees);
+        return [Math.sin(angle) * 4, height - 9, Math.cos(angle) * 4, angle];
+    });
+    const tower = addArrowSlits(
+        new THREE.CylinderGeometry(4.5, 4.5, 18),
+        new THREE.CylinderGeometry(3.5, 3.5, 16),
+        positions
+    );
     tower.position.set(x, 9, z);
     castelo.add(tower);
 }
 
-cylinderTower(119.0, -20.0); // noroeste
-cylinderTower(72.0, -20.0); // sudoeste
-cylinderTower(119.0, 20.0); // nordeste
-cylinderTower(72.0, 20.0); // sudeste
+cylinderTower(119, -20, [ // noroeste
+    [5.5, -165], [5.5, 30], [5.5, 130],
+    [10.4, -160], [10.4, 70],
+    [15.2, -100], [15.2, 35], [15.2, 130]
+]);
+cylinderTower(72, -20, [ // sudoeste
+    [5.2, -140], [5.2, -70], [5.2, 110],
+    [10, -60], [10, 165],
+    [14.4, -140], [14.4, 120]
+]);
+cylinderTower(119, 20, [ // nordeste
+    [5.5, -65], [5.5, 0], [5.5, 120],
+    [10.6, -45], [10.6, 60],
+    [15.4, 60]
+]);
+cylinderTower(72, 20, [ // sudeste
+    [4.7, -140], [4.7, -15], [4.7, 40],
+    [9.4, -80], [9.4, 40],
+    [14.2, -135], [14.2, -15], [14.2, 45]
+]);
 
 //COROAS DAS TORRES CILINDRICAS
 
@@ -405,19 +474,21 @@ castelo.add(backDoor);
 const backCastleDoors = backDoor.children.map((door, index) => [door, castleDoors[index][1]]);
 
 //TORRE LATERAIS E TRASEIRA
-let middleTowersGeometry = new THREE.BoxGeometry(8, 18, 5);
-
-function createMiddleTower(x, z, rotation = 0) {
-    let middleTower = new THREE.Mesh(middleTowersGeometry, material);
+function createMiddleTower(x, z, rotation, slits) {
+    const middleTower = addArrowSlits(
+        new THREE.BoxGeometry(8, 18, 5),
+        new THREE.BoxGeometry(6, 16, 3),
+        slits.map(([offset, height]) => [offset, height - 9, 2, 0])
+    );
     middleTower.position.set(x, 9, z);
     rotation = THREE.MathUtils.degToRad(rotation);
     middleTower.rotation.y = rotation;
     castelo.add(middleTower);
 }
 
-createMiddleTower(95, -21.5); // Oeste
-createMiddleTower(95, 21.5); // Leste
-createMiddleTower(120.5, 0, 90); // Traseira
+createMiddleTower(95, -21.5, 180, [[0, 4.6], [0.1, 7.7], [0.3, 12.6]]); // Oeste
+createMiddleTower(95, 21.5, 0, [[-0.2, 4.1], [1, 8.5], [-1.4, 13.3]]); // Leste
+createMiddleTower(120.5, 0, 90, [[0, 7.8], [0, 13.2]]); // Traseira
 
 // TORRES PEQUENAS ADJACENTES
 let smallTowersGeometry = new THREE.CylinderGeometry(1, 1, 20);
