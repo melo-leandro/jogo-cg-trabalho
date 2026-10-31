@@ -156,9 +156,10 @@ export function groundCollision(camera, floors, delta) {
   }
 }
 
-export function rayIntersectsColliders(origin, direction, distance, colliders) {
+// primeiro ponto atingido por um raio (ou null), usado pelos dardos da besta
+export function firstColliderHit(origin, direction, distance, colliders) {
   updateDynamicColliders(colliders);
   raycaster.set(origin, direction);
   raycaster.far = distance;
-  return raycaster.intersectObjects(colliders, false).length > 0;
+  return raycaster.intersectObjects(colliders, false)[0] ?? null;
 }

@@ -6,7 +6,8 @@ import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.
 import { criarArma } from "./models/gun.js";
 import { backCastleDoors } from "./models/castle.js";
 import { groundCollision, jump, wallCollision } from "./mechanics/collision.js";
-import { atirar, atualizarProjeteis } from "./mechanics/shooting.js";
+import { atirar, atualizarBesta, atualizarProjeteis } from "./mechanics/shooting.js";
+import { renderWithWeapon } from "./world/renderWithWeapon.js";
 import { createHud } from "./ui/hud.js";
 import { createWorld } from "./world/world.js";
 import { castleDoors } from "./models/doors.js";
@@ -17,6 +18,8 @@ import { doorInteraction, doorLerping } from "./mechanics/doorMechanics.js";
 const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight } = createWorld();
 restoreCamera(camera);
 window.addEventListener("pagehide", () => saveCamera(camera));
+// o dardo crava em paredes, pisos e também no chão
+const boltColliders = [...wallCollisions, ...grounds.filter((object) => object.isMesh)];
 
 const { controls, update: movePlayer } = createPlayerControls(
   camera,
@@ -24,7 +27,8 @@ const { controls, update: movePlayer } = createPlayerControls(
   () => !isInOrbitMode(),
   isBuildCameraEnabled
 );
-const { arma, ponta } = criarArma(camera);
+const besta = criarArma(camera);
+const { arma } = besta;
 const hud = createHud(camera);
 const buildModeEnabled = isBuildCameraEnabled();
 arma.visible = !buildModeEnabled;
@@ -65,11 +69,13 @@ window.addEventListener("keydown", (event) => {
   jump();
 });
 
+// qualquer botão do mouse dispara (respeitando o tempo de recarga)
 window.addEventListener("mousedown", () => {
   if (!isInOrbitMode() && !isBuildCameraEnabled() && controls.isLocked) {
-    atirar(scene, camera, ponta);
+    atirar(scene, camera, besta, boltColliders);
   }
 });
+renderer.domElement.addEventListener("contextmenu", (event) => event.preventDefault());
 
 
 // interação com portas
@@ -106,7 +112,8 @@ function render() {
     }
   }
 
-  atualizarProjeteis(delta, scene, wallCollisions);
-  renderer.render(scene, camera);
+  hud.setReloadProgress(atualizarBesta(delta, besta, camera));
+  atualizarProjeteis(delta, scene, boltColliders);
+  renderWithWeapon(renderer, scene, camera, arma);
   requestAnimationFrame(render);
 }

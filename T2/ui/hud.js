@@ -14,6 +14,31 @@ export function createHud(camera) {
   });
   document.body.appendChild(crosshair);
 
+  // barra de recarga da besta, logo abaixo da mira
+  const reloadBar = document.createElement("div");
+  const reloadFill = document.createElement("div");
+  Object.assign(reloadBar.style, {
+    position: "fixed",
+    left: "50%",
+    top: "calc(50% + 24px)",
+    width: "48px",
+    height: "4px",
+    transform: "translateX(-50%)",
+    background: "rgba(0, 0, 0, 0.45)",
+    borderRadius: "2px",
+    overflow: "hidden",
+    pointerEvents: "none",
+    display: "none"
+  });
+  Object.assign(reloadFill.style, {
+    width: "0%",
+    height: "100%",
+    background: "#e8d9a8"
+  });
+  reloadBar.appendChild(reloadFill);
+  document.body.appendChild(reloadBar);
+  let crosshairVisible = true;
+
   // infobox fixo com os comandos
   const controlsBox = new InfoBox();
   controlsBox.infoBox.style.removeProperty("bottom");
@@ -28,7 +53,7 @@ export function createHud(camera) {
   controlsBox.add("Olhar: Mouse");
   controlsBox.add("Correr: Shift");
   controlsBox.add("Pular: Espaço");
-  controlsBox.add("Atirar: Clique esquerdo/direito");
+  controlsBox.add("Disparar besta: Clique esquerdo/direito");
   controlsBox.add("Câmera orbital: C");
   controlsBox.add("Modo construção: B");
   controlsBox.add("Dia/noite: H");
@@ -60,7 +85,16 @@ export function createHud(camera) {
 
   return {
     setCrosshairVisible(visible) {
+      crosshairVisible = visible;
       crosshair.style.display = visible ? "block" : "none";
+      if (!visible) reloadBar.style.display = "none";
+    },
+
+    // progress: 0 (acabou de disparar) .. 1 (besta carregada)
+    setReloadProgress(progress) {
+      const reloading = crosshairVisible && progress < 1;
+      reloadBar.style.display = reloading ? "block" : "none";
+      reloadFill.style.width = `${Math.round(progress * 100)}%`;
     },
 
     showCameraMode(isOrbiting) {
