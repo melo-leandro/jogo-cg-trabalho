@@ -30,6 +30,9 @@ export function criarMecanicaPortal(portal, { aoColocarEsfera, aoAbrir } = {}) {
 
       pedestal.ocupado = true;
       pedestal.tempo = 0;
+      pedestal.modelo.esfera.material.color.set(pedestal.modelo.cor);
+      pedestal.modelo.esfera.material.emissive.set(pedestal.modelo.cor);
+      pedestal.modelo.esfera.material.emissiveIntensity = 2;
       pedestal.modelo.esfera.visible = true;
       aoColocarEsfera?.(pedestais.filter((p) => p.ocupado).length, pedestais.length);
     }

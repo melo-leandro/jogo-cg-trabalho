@@ -1,35 +1,44 @@
 import * as THREE from "three";
+import {
+  atualizarChavesSoltas,
+  prepararChavesSoltas,
+  registrarChaveDrop
+} from "./keys.js";
 
 const enemyDefinitions = [
-  //enemy1
+  //inimigo1
   {
     position: [-55, 39, 54],
     direction: 1,
     axis: "x",
-    limits: [-55, -15]
+    limits: [-55, -15],
+    keyColor: "#3fa9ff"
   },
-  //enemy2
+  //inimigo2
   {
     position: [-108.5, 2, -7],
     direction: 1,
     axis: "z",
-    limits: [-7, 7]
+    limits: [-7, 7],
+    keyColor: "#3ddc6b"
   },
-  //enemy3
+  //inimigo3
   {
     type: "cylinder",
     position: [21.5, 24, -31],
     direction: 1,
     axis: "z",
-    limits: [-41, -21]
+    limits: [-41, -21],
+    keyColor: "#ffdf3f"
   },
-  //enemy4
+  //inimigo4
   {
     type: "cylinder",
     position: [41.5, 2.5, 35],
     direction: -1,
     axis: "z",
-    limits: [26, 44]
+    limits: [26, 44],
+    keyColor: "#d86cff"
   }
 ];
 
@@ -81,8 +90,11 @@ function createEnemy(definition, onHit) {
     fadeTime: 0,
     speed: 4,
     direction: definition.direction,
+    initialDirection: definition.direction,
     axis: definition.axis,
     limits: definition.limits,
+    originPosition: new THREE.Vector3(...definition.position),
+    keyColor: definition.keyColor,
     group: new THREE.Group()
   };
 
@@ -125,7 +137,9 @@ function createEnemy(definition, onHit) {
   return enemy;
 }
 
-export function createEnemies(scene, wallCollisions) {
+export function createEnemies(scene, wallCollisions, playerCollisions = null) {
+  prepararChavesSoltas(scene, enemyDefinitions.map((enemy) => enemy.keyColor));
+
   function damageEnemy(enemy, damage = 1) {
     if (!enemy?.alive || enemy.dying) return false;
 
@@ -138,16 +152,66 @@ export function createEnemies(scene, wallCollisions) {
       enemy.alive = false;
       enemy.dying = true;
       enemy.body.userData.ignoreCollision = true;
+      registrarChaveDrop(enemy.group.position, enemy.keyColor);
     }
     return true;
   }
 
   const enemies = enemyDefinitions.map((definition) => createEnemy(definition, damageEnemy));
   for (const enemy of enemies) scene.add(enemy.group);
-  const colliders = enemies.map((enemy) => enemy.body);
-  const targets = enemies.map((enemy) => enemy.group);
+  const colliders = [];
+  const targets = [];
+  let isNight = false;
+
+  for (const enemy of enemies) {
+    enemy.body.userData.ignoreCollision = true;
+    enemy.group.visible = false;
+  }
+
+  function setNight(value) {
+    const enteringNight = value && !isNight;
+    isNight = value;
+    for (const enemy of enemies) {
+      if (enteringNight && enemy.alive && !enemy.dying) {
+        enemy.direction = enemy.initialDirection;
+        enemy.group.position.copy(enemy.originPosition);
+        enemy.group.visible = true;
+        for (const mesh of enemy.fadeMeshes) {
+          mesh.visible = true;
+          mesh.material.opacity = 1;
+        }
+        enemy.healthBar.visible = true;
+        enemy.light.intensity = ENEMY_LIGHT_INTENSITY;
+      } else if (!isNight) {
+        enemy.group.visible = false;
+        enemy.light.intensity = 0;
+      }
+
+      const active = isNight && enemy.alive && !enemy.dying;
+      enemy.group.visible = isNight && (active || enemy.dying);
+      enemy.body.userData.ignoreCollision = !active;
+
+      const colliderIndex = colliders.indexOf(enemy.body);
+      if (active && colliderIndex === -1) {
+        colliders.push(enemy.body);
+        if (playerCollisions) playerCollisions.push(enemy.body);
+      } else if (!active && colliderIndex !== -1) {
+        colliders.splice(colliderIndex, 1);
+        if (playerCollisions) {
+          const playerColliderIndex = playerCollisions.indexOf(enemy.body);
+          if (playerColliderIndex !== -1) playerCollisions.splice(playerColliderIndex, 1);
+        }
+      }
+
+      const targetIndex = targets.indexOf(enemy.group);
+      if (active && targetIndex === -1) targets.push(enemy.group);
+      else if (!active && targetIndex !== -1) targets.splice(targetIndex, 1);
+    }
+  }
 
   function update(delta, camera) {
+    atualizarChavesSoltas(camera);
+    if (!isNight) return;
     for (const enemy of enemies) {
       if (enemy.dying) {
         enemy.fadeTime += delta;
@@ -155,9 +219,15 @@ export function createEnemies(scene, wallCollisions) {
         for (const mesh of enemy.fadeMeshes) mesh.material.opacity = opacity;
         enemy.light.intensity = ENEMY_LIGHT_INTENSITY * opacity;
         if (enemy.fadeTime >= FADE_DURATION) {
-          enemy.group.removeFromParent();
+          for (const mesh of enemy.fadeMeshes) mesh.visible = false;
+          enemy.healthBar.visible = false;
+          enemy.light.intensity = 0;
           const colliderIndex = colliders.indexOf(enemy.body);
           if (colliderIndex !== -1) colliders.splice(colliderIndex, 1);
+          if (playerCollisions) {
+            const playerColliderIndex = playerCollisions.indexOf(enemy.body);
+            if (playerColliderIndex !== -1) playerCollisions.splice(playerColliderIndex, 1);
+          }
           const targetIndex = targets.indexOf(enemy.group);
           if (targetIndex !== -1) targets.splice(targetIndex, 1);
           enemy.dying = false;
@@ -214,6 +284,7 @@ export function createEnemies(scene, wallCollisions) {
     enemies,
     colliders,
     targets,
+    setNight,
     damageEnemy,
     update
   };
