@@ -136,5 +136,5 @@ function criarPedestal(cor) {
   luz.position.y = alturaEsfera + 0.2;
   grupo.add(esfera, luz);
 
-  return { grupo, esfera, luz };
+  return { grupo, esfera, luz, cor };
 }
