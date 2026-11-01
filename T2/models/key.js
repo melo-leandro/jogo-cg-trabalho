@@ -10,11 +10,13 @@ export function criarChave(cor = "#ffc94a") {
   const chave = new THREE.Mesh(
     geometriaChave,
     new THREE.MeshPhongMaterial({
-      color: cor,
-      emissive: cor,
-      emissiveIntensity: 0.8,
+      color: "#ffffff",
+      emissive: "#ffffff",
+      emissiveIntensity: 2,
       specular: "#ffffff",
-      shininess: 100
+      shininess: 180,
+      transparent: false,
+      opacity: 1
     })
   );
   chave.name = "chave";

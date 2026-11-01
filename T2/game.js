@@ -20,8 +20,7 @@ import { createEnemies } from "./mechanics/enemies.js";
 
 const { scene, renderer, camera, grounds, wallCollisions, playerCollisions, toggleDayNight, portal } = createWorld();
 
-const enemySystem = createEnemies(scene, wallCollisions);
-playerCollisions.push(...enemySystem.colliders);
+const enemySystem = createEnemies(scene, wallCollisions, playerCollisions);
 restoreCamera(camera);
 window.addEventListener("pagehide", () => saveCamera(camera));
 // o dardo crava em paredes, pisos e também no chão
@@ -41,7 +40,9 @@ arma.visible = !buildModeEnabled;
 hud.setCrosshairVisible(!buildModeEnabled);
 
 window.addEventListener("keydown", (event) => {
-  if (event.code === "KeyH" && !event.repeat) toggleDayNight();
+  if (event.code === "KeyH" && !event.repeat) {
+    enemySystem.setNight(toggleDayNight());
+  }
 });
 
 // chaves e portal

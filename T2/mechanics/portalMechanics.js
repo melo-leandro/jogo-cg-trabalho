@@ -26,6 +26,9 @@ export function criarMecanicaPortal(portal, { aoColocarEsfera, aoAbrir } = {}) {
 
       // a esfera aparece sobre o pedestal com a sua luz pontual
       pedestal.ocupado = true;
+      pedestal.modelo.esfera.material.color.set(pedestal.modelo.cor);
+      pedestal.modelo.esfera.material.emissive.set(pedestal.modelo.cor);
+      pedestal.modelo.esfera.material.emissiveIntensity = 2;
       pedestal.modelo.esfera.visible = true;
       pedestal.modelo.luz.intensity = INTENSIDADE_LUZ_ESFERA;
       aoColocarEsfera?.(pedestais.filter((p) => p.ocupado).length, pedestais.length);

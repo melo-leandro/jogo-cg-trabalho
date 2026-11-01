@@ -66,16 +66,16 @@ function addArrowSlits(solid, positions) {
     });
     slitGeometry.translate(0, 0, -1.1);
     const cutter = new THREE.Mesh(slitGeometry, material);
-    const playerCollider = CSG.toMesh(solid, new THREE.Matrix4(), material);
-    playerCollider.visible = false;
-    playerCollider.userData.ignoreCollision = true;
-    playerCollider.userData.playerCollider = true;
     for (const [x, y, z, angle] of positions) {
         cutter.position.set(x, y, z);
         cutter.rotation.y = angle;
         cutter.updateMatrix();
         solid = solid.subtract(CSG.fromMesh(cutter));
     }
+    const playerCollider = CSG.toMesh(solid, new THREE.Matrix4(), material);
+    playerCollider.visible = false;
+    playerCollider.userData.ignoreCollision = true;
+    playerCollider.userData.playerCollider = true;
     const result = CSG.toMesh(solid, new THREE.Matrix4(), material);
     result.add(playerCollider);
     // Iluminação temporária para inspecionar o interior das torres.
