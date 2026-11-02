@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { setDefaultMaterial } from "../libs/util/util.js";
-import { criarChave, RAIO_CHAVE } from "./key.js";
+import { criarChave, RAIO_CHAVE, CORES_CHAVES } from "./key.js";
 
 export const RAIO_ESCOTILHA = 4.5;
 const RAIO_MOLDURA = 5.8;
@@ -9,13 +9,21 @@ const BEVEL_MOLDURA = 0.05;
 const ESPESSURA_TAMPA = 0.22;
 const DISTANCIA_PEDESTAL = 8.5;
 
-// cor de cada esfera (como na ilustração do enunciado)
-const CORES = ["#ffb43a", "#3fa9ff", "#3ddc6b", "#b35cff"];
 const CANTOS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
 
 const pedra = setDefaultMaterial("#6d6a63");
 const pedraEscura = setDefaultMaterial("#4f4c46");
 const ferro = setDefaultMaterial("#3a3c40");
+
+const formatoChave = new THREE.Shape();
+formatoChave.moveTo(0, 0.55);
+for (const [x, y] of [
+  [0.3, 0.25], [0.07, 0.02], [0.07, -0.15], [0.23, -0.15],
+  [0.23, -0.25], [0.07, -0.25], [0.07, -0.4], [-0.07, -0.4],
+  [-0.07, 0.02], [-0.3, 0.25], [0, 0.55]
+]) formatoChave.lineTo(x, y);
+formatoChave.holes.push(new THREE.Path().absarc(0, 0.25, 0.12, 0, Math.PI * 2, true));
+const geometriaSimboloChave = new THREE.ShapeGeometry(formatoChave);
 
 export function criarPortal() {
   const grupo = new THREE.Group();
@@ -30,7 +38,7 @@ export function criarPortal() {
 
   grupo.add(moldura, tampa, vortice, luzPortal);
 
-  const pedestais = CORES.map((cor, i) => {
+  const pedestais = CORES_CHAVES.map((cor, i) => {
     const pedestal = criarPedestal(cor);
     const [sx, sz] = CANTOS[i];
     pedestal.grupo.position.set(sx * DISTANCIA_PEDESTAL, 0, sz * DISTANCIA_PEDESTAL);
@@ -128,6 +136,17 @@ function criarPedestal(cor) {
   }
 
   const alturaEsfera = 2.65 + RAIO_CHAVE * 0.85;
+  const materialSimbolo = new THREE.MeshLambertMaterial({ color: cor, emissive: cor, emissiveIntensity: 0.7 });
+  for (let lado = 0; lado < 4; lado++) {
+    const angulo = lado * Math.PI / 2;
+    const marcador = new THREE.Mesh(geometriaSimboloChave, materialSimbolo);
+    marcador.name = "marcadorChave";
+    marcador.position.set(Math.sin(angulo) * 1.06, 1.35, Math.cos(angulo) * 1.06);
+    marcador.rotation.y = angulo;
+    marcador.userData.ignoreCollision = true;
+    grupo.add(marcador);
+  }
+
   const esfera = criarChave(cor);
   esfera.position.y = alturaEsfera;
   esfera.visible = false;
