@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { groundCollision } from "./collision.js";
 import {
   atualizarChavesSoltas,
   prepararChavesSoltas,
@@ -12,7 +11,7 @@ const enemyDefinitions = [
   {
     model: "./assets/bat.glb",
     flipOnTurn: true,
-    position: [-55, 39, 54],
+    position: [-55, 39.5, 54],
     direction: 1,
     axis: "x",
     limits: [-55, -15],
@@ -22,7 +21,7 @@ const enemyDefinitions = [
   {
     model: "./assets/bat.glb",
     modelRotationY: -Math.PI / 2,
-    position: [-108.5, 3, -7],
+    position: [-108.5, 3.5, -7],
     direction: 1,
     axis: "z",
     limits: [-7, 7],
@@ -177,8 +176,6 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null, gr
       if (!enemy.alive) continue;
       enemy.healthBar.lookAt(camera.position);
       if (!active) continue;
-
-      if (grounds.length) groundCollision(enemy.group, grounds, delta, enemy.groundState, 2);
 
       const direction = enemy.axis === "x"
         ? new THREE.Vector3(enemy.direction, 0, 0)
