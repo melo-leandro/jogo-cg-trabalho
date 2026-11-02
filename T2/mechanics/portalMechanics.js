@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { usarChave, quantidadeChaves } from "./keys.js";
+import { RAIO_ESCOTILHA } from "../models/portal.js";
 
 const DISTANCIA_INTERACAO = 3.4; // distância horizontal até o centro do pedestal
 const ALTURA_OLHO = 4;
@@ -8,8 +9,8 @@ const DURACAO_ABERTURA = 2.6;
 const ANGULO_ABERTA = THREE.MathUtils.degToRad(105);
 const INTENSIDADE_LUZ_PORTAL = 90;
 
-// estado: "fechado" -> "abrindo" -> "aberto"
-export function criarMecanicaPortal(portal, { aoColocarEsfera, aoAbrir } = {}) {
+// estado: "fechado" -> "abrindo" -> "aberto" -> "concluido"
+export function criarMecanicaPortal(portal, { aoColocarEsfera, aoAbrir, aoEntrar } = {}) {
   const pedestais = portal.pedestais.map((modelo) => ({ modelo, ocupado: false }));
   const posicao = new THREE.Vector3();
   let estado = "fechado";
@@ -22,7 +23,7 @@ export function criarMecanicaPortal(portal, { aoColocarEsfera, aoAbrir } = {}) {
       pedestal.modelo.grupo.getWorldPosition(posicao);
       const distancia = Math.hypot(camera.position.x - posicao.x, camera.position.z - posicao.z);
       const noMesmoNivel = Math.abs(camera.position.y - ALTURA_OLHO - posicao.y) < 1.5;
-      if (distancia > DISTANCIA_INTERACAO || !noMesmoNivel || !usarChave()) continue;
+      if (distancia > DISTANCIA_INTERACAO || !noMesmoNivel || !usarChave(pedestal.modelo.cor)) continue;
 
       // a esfera aparece sobre o pedestal com a sua luz pontual
       pedestal.ocupado = true;
@@ -56,7 +57,16 @@ export function criarMecanicaPortal(portal, { aoColocarEsfera, aoAbrir } = {}) {
     atualizar(delta, camera, podeInteragir) {
       if (estado === "fechado" && podeInteragir) tentarColocarEsferas(camera);
       if (estado === "abrindo") abrirTampa(delta);
+      if (estado === "aberto" && podeInteragir) {
+        portal.grupo.getWorldPosition(posicao);
+        const distancia = Math.hypot(camera.position.x - posicao.x, camera.position.z - posicao.z);
+        const noMesmoNivel = Math.abs(camera.position.y - ALTURA_OLHO - posicao.y) < 1.5;
+        if (distancia < RAIO_ESCOTILHA - 0.6 && noMesmoNivel) {
+          estado = "concluido";
+          aoEntrar?.(posicao.clone());
+        }
+      }
     },
-    estaAberto: () => estado === "aberto"
+    estaAberto: () => estado === "aberto" || estado === "concluido"
   };
 }
