@@ -1,27 +1,27 @@
 import * as THREE from "three";
-import { criarChave } from "../models/key.js";
+import { criarChave, CORES_CHAVES } from "../models/key.js";
 
 // Chaves que o jogador carrega.
 // Inimigos chamam adicionarChave() quando a chave é coletada;
 // o portal chama usarChave() quando uma esfera é colocada num pedestal.
 
-export const TOTAL_CHAVES = 4;
-
-let carregadas = 0;
-let colocadas = 0;
-let antesDoAtalho = null; // quantidade guardada ao apertar K (null: atalho desligado)
+let carregadas = new Set();
+const colocadas = new Set();
+let antesDoAtalho = null; // cores guardadas ao apertar K (null: atalho desligado)
 const ouvintes = new Set();
 const chavesSoltas = [];
 const DISTANCIA_COLETA = 3.4;
+const ALTURA_CENTRO_JOGADOR = 2;
 const chavesPreparadas = [];
+const dropsPendentes = new Map();
 
 export function quantidadeChaves() {
-  return carregadas;
+  return carregadas.size;
 }
 
-export function adicionarChave() {
-  if (carregadas >= TOTAL_CHAVES - colocadas) return false;
-  carregadas = Math.min(carregadas + 1, TOTAL_CHAVES - colocadas);
+export function adicionarChave(cor) {
+  if (!CORES_CHAVES.includes(cor) || carregadas.has(cor) || colocadas.has(cor)) return false;
+  carregadas.add(cor);
   avisar();
   return true;
 }
@@ -41,6 +41,12 @@ export function prepararChavesSoltas(scene, colors) {
 }
 
 export function registrarChaveDrop(position, color) {
+  if (antesDoAtalho !== null) {
+    dropsPendentes.set(color, position.clone());
+    return;
+  }
+  if (carregadas.has(color) || colocadas.has(color)) return;
+
   const chavePreparada = chavesPreparadas.find((chave) =>
     !chave.usada && chave.color === color
   );
@@ -57,8 +63,9 @@ export function atualizarChavesSoltas(camera) {
   for (let i = chavesSoltas.length - 1; i >= 0; i--) {
     const chaveSolta = chavesSoltas[i];
     const dx = camera.position.x - chaveSolta.grupo.position.x;
+    const dy = camera.position.y - ALTURA_CENTRO_JOGADOR - chaveSolta.grupo.position.y;
     const dz = camera.position.z - chaveSolta.grupo.position.z;
-    if (Math.hypot(dx, dz) > DISTANCIA_COLETA || !adicionarChave()) continue;
+    if (Math.hypot(dx, dy, dz) > DISTANCIA_COLETA || !adicionarChave(chaveSolta.color)) continue;
 
     chaveSolta.grupo.visible = false;
     chaveSolta.luz.intensity = 0;
@@ -66,23 +73,24 @@ export function atualizarChavesSoltas(camera) {
   }
 }
 
-export function usarChave() {
-  if (carregadas <= 0) return false;
-  carregadas--;
-  colocadas++;
+export function usarChave(cor) {
+  if (!carregadas.delete(cor)) return false;
+  colocadas.add(cor);
   avisar();
   return true;
 }
 
 // Tecla K: recebe todas as chaves que ainda não estão nos pedestais;
-// apertando de novo, volta à quantidade anterior. Retorna true se o atalho ficou ativo.
+// apertando de novo, restaura as cores anteriores que ainda não foram usadas.
 export function alternarTodasAsChaves() {
   if (antesDoAtalho === null) {
-    antesDoAtalho = carregadas;
-    carregadas = TOTAL_CHAVES - colocadas;
+    antesDoAtalho = new Set(carregadas);
+    carregadas = new Set(CORES_CHAVES.filter((cor) => !colocadas.has(cor)));
   } else {
-    carregadas = Math.min(antesDoAtalho, TOTAL_CHAVES - colocadas);
+    carregadas = new Set([...antesDoAtalho].filter((cor) => !colocadas.has(cor)));
     antesDoAtalho = null;
+    for (const [cor, position] of dropsPendentes) registrarChaveDrop(position, cor);
+    dropsPendentes.clear();
   }
   avisar();
   return antesDoAtalho !== null;
@@ -90,9 +98,9 @@ export function alternarTodasAsChaves() {
 
 export function aoMudarChaves(funcao) {
   ouvintes.add(funcao);
-  funcao(carregadas, colocadas);
+  funcao([...carregadas], [...colocadas]);
 }
 
 function avisar() {
-  for (const funcao of ouvintes) funcao(carregadas, colocadas);
+  for (const funcao of ouvintes) funcao([...carregadas], [...colocadas]);
 }
