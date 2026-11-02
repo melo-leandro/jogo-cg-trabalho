@@ -4,14 +4,15 @@ import * as THREE from "three";
 // Também usada por quem implementar os inimigos, ao soltar a chave.
 
 export const RAIO_CHAVE = 0.5;
+export const CORES_CHAVES = ["#ffb43a", "#3fa9ff", "#3ddc6b", "#b35cff"];
 const geometriaChave = new THREE.SphereGeometry(RAIO_CHAVE, 32, 16);
 
 export function criarChave(cor = "#ffc94a") {
   const chave = new THREE.Mesh(
     geometriaChave,
     new THREE.MeshPhongMaterial({
-      color: "#ffffff",
-      emissive: "#ffffff",
+      color: cor,
+      emissive: cor,
       emissiveIntensity: 2,
       specular: "#ffffff",
       shininess: 180,
