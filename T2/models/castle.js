@@ -78,11 +78,6 @@ function addArrowSlits(solid, positions) {
     playerCollider.userData.playerCollider = true;
     const result = CSG.toMesh(solid, new THREE.Matrix4(), material);
     result.add(playerCollider);
-    // Iluminação temporária para inspecionar o interior das torres.
-    const temporaryLight = new THREE.PointLight("#fff1d6", 800, 60);
-    temporaryLight.name = 'temporaryTowerLight';
-    temporaryLight.position.y = 4.5;
-    result.add(temporaryLight);
     const borderShape = new THREE.Shape(shape.getPoints(6).map(point =>
         new THREE.Vector2(point.x * 1.5, point.y * 1.06)
     ));
@@ -100,6 +95,8 @@ function addArrowSlits(solid, positions) {
     slitGeometry.dispose();
     return result;
 }
+
+const towerFloorGeometry = new THREE.CylinderGeometry(3.5, 3.5, 0.5, 32);
 
 function cylinderTower(x, z, slits) {
     const inwardX = x === 72 ? 1 : -1;
@@ -131,6 +128,7 @@ function cylinderTower(x, z, slits) {
     const tower = addArrowSlits(solid, positions);
     tower.position.set(x, 9, z);
     castelo.add(tower);
+    floor(x, height - 0.25 + ZF, z, null, null, null, 0, castelo, material, towerFloorGeometry);
     floor(x + inwardX * 2.75, height - 0.25, z + inwardZ * 2,
         3.5, 0.5, 2, 0, castelo, material);
     floor(x + inwardX * 2, height - 0.25, z + inwardZ * 2.75,
