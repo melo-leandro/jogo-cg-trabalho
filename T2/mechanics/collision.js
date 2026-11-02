@@ -5,8 +5,7 @@ const down = new THREE.Vector3(0, -1, 0);
 const wallRayHeights = [-2.45, -1.95, -1.45, -0.95, -0.45, -0.05];
 const wallRayOffsets = [-0.6, 0, 0.6];
 
-let velocityY = 0;
-let isGrounded = false;
+const playerGroundState = { velocityY: 0, isGrounded: false };
 const gravity = 25;
 const jumpVelocity = 12;
 const playerWidth = 0.6;
@@ -14,10 +13,10 @@ const maximumStepHeight = 1.5;
 const maximumGroundDrop = 1.5;
 
 export function jump() {
-  if (!isGrounded) return;
+  if (!playerGroundState.isGrounded) return;
 
-  velocityY = jumpVelocity;
-  isGrounded = false;
+  playerGroundState.velocityY = jumpVelocity;
+  playerGroundState.isGrounded = false;
 }
 
 export function createWallCollision(objects, forPlayer = false) {
@@ -110,17 +109,16 @@ export function wallCollision(camera, lastPosition, colliders) {
   moveWithWallSlide(camera.position, movement, colliders);
 }
 
-export function groundCollision(camera, floors, delta) {
-  const viewHeight = 4;
-  const wasGrounded = isGrounded;
+export function groundCollision(camera, floors, delta, state = playerGroundState, viewHeight = 4) {
+  const wasGrounded = state.isGrounded;
 
-  velocityY -= gravity * delta;
-  camera.position.y += velocityY * delta;
-  isGrounded = false;
+  state.velocityY -= gravity * delta;
+  camera.position.y += state.velocityY * delta;
+  state.isGrounded = false;
 
   // quanto o player caiu neste frame: limita a penetração possível no chão,
   // então é a folga extra tanto pra achar quanto pra aceitar o pouso em queda rápida
-  const distanceFallen = velocityY < 0 ? -velocityY * delta : 0;
+  const distanceFallen = state.velocityY < 0 ? -state.velocityY * delta : 0;
 
   const rayOrigin = camera.position.clone();
   rayOrigin.y += viewHeight + 0.5;
@@ -141,7 +139,7 @@ export function groundCollision(camera, floors, delta) {
   const groundHeight = intersections[0].point.y + viewHeight;
   const heightDifference = groundHeight - camera.position.y;
 
-  if (velocityY > 0) {
+  if (state.velocityY > 0) {
     if (heightDifference > 0 && heightDifference <= maximumStepHeight) {
       camera.position.y = groundHeight;
     }
@@ -155,8 +153,8 @@ export function groundCollision(camera, floors, delta) {
 
   if (canStepUp || canFollowRampDown) {
     camera.position.y = groundHeight;
-    velocityY = 0;
-    isGrounded = true;
+    state.velocityY = 0;
+    state.isGrounded = true;
   }
 }
 
