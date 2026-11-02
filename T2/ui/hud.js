@@ -1,6 +1,7 @@
 import { InfoBox } from "../libs/util/util.js";
+import { createKeyPanel } from "./keyPanel.js";
 
-export function createHud(camera) {
+export function createHud() {
   const crosshair = document.createElement("div");
   crosshair.textContent = "+";
   Object.assign(crosshair.style, {
@@ -47,7 +48,8 @@ export function createHud(camera) {
     right: "10px",
     left: "auto",
     fontSize: "14px",
-    opacity: "0.8"
+    opacity: "0.8",
+    pointerEvents: "none"
   });
   controlsBox.add("Mover: WASD / Setas");
   controlsBox.add("Olhar: Mouse");
@@ -93,22 +95,26 @@ export function createHud(camera) {
     messageTimeout = setTimeout(() => buildModeBox.infoBox.remove(), 2500);
   }
 
-  // chaves carregadas pelo jogador (canto inferior esquerdo)
-  const keysPanel = document.createElement("div");
-  Object.assign(keysPanel.style, {
-    position: "fixed",
-    left: "10px",
-    bottom: "10px",
-    padding: "8px 12px",
-    background: "rgba(0, 0, 0, 0.55)",
-    color: "white",
-    font: "14px sans-serif",
-    borderRadius: "6px",
-    pointerEvents: "none"
+  const setKeys = createKeyPanel();
+
+  const victoryScreen = document.createElement("div");
+  Object.assign(victoryScreen.style, {
+    position: "fixed", inset: "0", display: "none", placeItems: "center",
+    background: "#071226", color: "white", textAlign: "center",
+    font: "18px sans-serif", padding: "24px", zIndex: "1000", pointerEvents: "none"
   });
-  document.body.appendChild(keysPanel);
+  victoryScreen.setAttribute("role", "status");
+  victoryScreen.innerHTML = `<div><h1>Você escapou do castelo!</h1>` +
+    `<p>As quatro chaves abriram o caminho. Fim de jogo.</p>` +
+    `<p>Pressione R para jogar novamente.</p></div>`;
+  document.body.appendChild(victoryScreen);
 
   return {
+    showVictory(progress) {
+      victoryScreen.style.display = "grid";
+      victoryScreen.style.opacity = String(progress);
+    },
+
     setCrosshairVisible(visible) {
       crosshairVisible = visible;
       crosshair.style.display = visible ? "block" : "none";
@@ -134,16 +140,6 @@ export function createHud(camera) {
 
     showMessage,
 
-    // carried: chaves com o jogador; placed: esferas já nos pedestais
-    setKeys(carried, placed, total = 4) {
-      const slots = Array.from({ length: total }, (_, i) =>
-        `<span style="display:inline-block;width:14px;height:14px;margin-left:5px;border-radius:50%;` +
-        (i < carried
-          ? `background:#ffc94a;box-shadow:0 0 6px #ffc94a;"></span>`
-          : `border:2px solid rgba(255,255,255,0.45);box-sizing:border-box;"></span>`)
-      ).join("");
-      keysPanel.innerHTML = `Chaves:${slots}<div style="font-size:12px;opacity:0.75;margin-top:4px">` +
-        `Nos pedestais: ${placed}/${total}</div>`;
-    }
+    setKeys
   };
 }
