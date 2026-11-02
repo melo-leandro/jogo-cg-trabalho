@@ -1,13 +1,18 @@
 import * as THREE from "three";
+import { GLTFLoader } from "../build/jsm/loaders/GLTFLoader.js";
 import {
   atualizarChavesSoltas,
   prepararChavesSoltas,
   registrarChaveDrop
 } from "./keys.js";
 
+const modelLoader = new GLTFLoader();
+
 const enemyDefinitions = [
   //inimigo1
   {
+    model: "./assets/bat.glb",
+    flipOnTurn: true,
     position: [-55, 39, 54],
     direction: 1,
     axis: "x",
@@ -16,6 +21,8 @@ const enemyDefinitions = [
   },
   //inimigo2
   {
+    model: "./assets/bat.glb",
+    modelRotationY: -Math.PI / 2,
     position: [-108.5, 2, -7],
     direction: 1,
     axis: "z",
@@ -25,6 +32,9 @@ const enemyDefinitions = [
   //inimigo3
   {
     type: "cylinder",
+    model: "./assets/slime.glb",
+    modelRotationY: -Math.PI / 2,
+    flipOnTurn: true,
     position: [21.5, 24, -31],
     direction: 1,
     axis: "z",
@@ -34,10 +44,12 @@ const enemyDefinitions = [
   //inimigo4
   {
     type: "cylinder",
+    model: "./assets/slime.glb",
+    flipOnTurn: true,
     position: [41.5, 2.5, 35],
     direction: -1,
     axis: "z",
-    limits: [26, 44],
+    limits: [26, 42],
     keyColor: "#d86cff"
   }
 ];
@@ -59,6 +71,23 @@ const movement = new THREE.Vector3();
 const nextPosition = new THREE.Vector3();
 const FADE_DURATION = 0.8;
 const ENEMY_LIGHT_INTENSITY = 30;
+
+function reverseEnemyDirection(enemy) {
+  enemy.direction *= -1;
+  if (!enemy.flipOnTurn) return;
+
+  enemy.turnRotation += Math.PI;
+  if (enemy.model) enemy.model.rotation.y += Math.PI;
+}
+
+function setMeshOpacity(mesh, opacity) {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  for (const material of materials) {
+    material.transparent = opacity < 1;
+    material.depthWrite = opacity >= 1;
+    material.opacity = opacity;
+  }
+}
 
 function createHealthBar() {
   const bar = new THREE.Group();
@@ -95,20 +124,22 @@ function createEnemy(definition, onHit) {
     limits: definition.limits,
     originPosition: new THREE.Vector3(...definition.position),
     keyColor: definition.keyColor,
+    flipOnTurn: definition.flipOnTurn === true,
+    turnRotation: 0,
+    model: null,
     group: new THREE.Group()
   };
 
   const bodyGeometry = definition.type === "cylinder"
     ? new THREE.CylinderGeometry(1.3, 1.3, 4, 20)
     : new THREE.BoxGeometry(2, 4, 2);
-  const body = new THREE.Mesh(
-    bodyGeometry,
-    bodyMaterials[definition.type ?? "cube"].clone()
-  );
+  const bodyMaterial = bodyMaterials[definition.type ?? "cube"].clone();
+  bodyMaterial.opacity = 0;
+  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
   body.userData.enemy = enemy;
   body.userData.dynamicCollider = true;
-  body.castShadow = true;
-  body.receiveShadow = true;
+  body.castShadow = false;
+  body.receiveShadow = false;
 
   const light = new THREE.PointLight(
     definition.type === "cylinder" ? "#7dff70" : "#d86cff",
@@ -130,9 +161,35 @@ function createEnemy(definition, onHit) {
   };
   enemy.group.add(body, light, healthBar);
   enemy.fadeMeshes = [];
-  enemy.group.traverse((object) => {
-    if (object.isMesh) enemy.fadeMeshes.push(object);
-  });
+  modelLoader.load(
+    definition.model,
+    (gltf) => {
+      const model = gltf.scene;
+      model.scale.setScalar(definition.type === "cylinder" ? 2 : 1);
+      model.rotation.y = (definition.modelRotationY ?? Math.PI / 2) + enemy.turnRotation;
+      model.position.y = -2;
+      model.traverse((object) => {
+        if (!object.isMesh) return;
+        object.castShadow = true;
+        object.receiveShadow = true;
+        object.userData.enemy = enemy;
+        enemy.fadeMeshes.push(object);
+      });
+      enemy.model = model;
+      enemy.group.add(model);
+      const opacity = enemy.dying
+        ? Math.max(0, 1 - enemy.fadeTime / FADE_DURATION)
+        : 1;
+      for (const mesh of enemy.fadeMeshes) {
+        mesh.visible = opacity > 0;
+        setMeshOpacity(mesh, opacity);
+      }
+    },
+    undefined,
+    (error) => {
+      console.error(`Erro ao carregar o modelo do inimigo: ${definition.model}`, error);
+    }
+  );
   enemy.group.position.set(...definition.position);
   return enemy;
 }
@@ -151,6 +208,11 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null) {
     if (enemy.health === 0) {
       enemy.alive = false;
       enemy.dying = true;
+      enemy.fadeTime = 0;
+      for (const mesh of enemy.fadeMeshes) {
+        mesh.visible = true;
+        setMeshOpacity(mesh, 1);
+      }
       enemy.body.userData.ignoreCollision = true;
       registrarChaveDrop(enemy.group.position, enemy.keyColor);
     }
@@ -178,7 +240,7 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null) {
         enemy.group.visible = true;
         for (const mesh of enemy.fadeMeshes) {
           mesh.visible = true;
-          mesh.material.opacity = 1;
+          setMeshOpacity(mesh, 1);
         }
         enemy.healthBar.visible = true;
         enemy.light.intensity = ENEMY_LIGHT_INTENSITY;
@@ -216,7 +278,7 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null) {
       if (enemy.dying) {
         enemy.fadeTime += delta;
         const opacity = Math.max(0, 1 - enemy.fadeTime / FADE_DURATION);
-        for (const mesh of enemy.fadeMeshes) mesh.material.opacity = opacity;
+        for (const mesh of enemy.fadeMeshes) setMeshOpacity(mesh, opacity);
         enemy.light.intensity = ENEMY_LIGHT_INTENSITY * opacity;
         if (enemy.fadeTime >= FADE_DURATION) {
           for (const mesh of enemy.fadeMeshes) mesh.visible = false;
@@ -243,7 +305,7 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null) {
       raycaster.set(enemy.group.position, direction);
       raycaster.far = enemy.speed * delta + 1.2;
       if (raycaster.intersectObjects(wallCollisions, false).length > 0) {
-        enemy.direction *= -1;
+        reverseEnemyDirection(enemy);
       }
 
       movement.set(
@@ -255,7 +317,7 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null) {
       const [minimum, maximum] = enemy.limits;
       const nextCoordinate = enemy.axis === "x" ? nextPosition.x : nextPosition.z;
       if (nextCoordinate < minimum || nextCoordinate > maximum) {
-        enemy.direction *= -1;
+        reverseEnemyDirection(enemy);
         if (enemy.axis === "x") {
           nextPosition.x = enemy.group.position.x + enemy.direction * enemy.speed * delta;
         } else {
