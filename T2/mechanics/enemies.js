@@ -23,7 +23,7 @@ const enemyDefinitions = [
   {
     model: "./assets/bat.glb",
     modelRotationY: -Math.PI / 2,
-    position: [-108.5, 2, -7],
+    position: [-108.5, 3, -7],
     direction: 1,
     axis: "z",
     limits: [-7, 7],
