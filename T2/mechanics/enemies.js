@@ -64,6 +64,24 @@ function reverseEnemyDirection(enemy) {
   if (enemy.model) enemy.model.rotation.y += Math.PI;
 }
 
+function pushPlayerWithEnemy(enemy, previousPosition, nextPosition, camera) {
+  const axis = enemy.axis;
+  const lateralAxis = axis === "x" ? "z" : "x";
+  const movementDistance = nextPosition[axis] - previousPosition[axis];
+  if (movementDistance === 0) return;
+
+  const playerDistance = camera.position[axis] - previousPosition[axis];
+  const collisionDistance = enemy.collisionRadius + 0.6;
+  const lateralDistance = Math.abs(camera.position[lateralAxis] - previousPosition[lateralAxis]);
+  const nextPlayerDistance = camera.position[axis] - nextPosition[axis];
+  const isInFront = playerDistance * movementDistance >= 0;
+  const isColliding = Math.abs(nextPlayerDistance) <= collisionDistance;
+
+  if (isInFront && isColliding && lateralDistance <= collisionDistance) {
+    camera.position[axis] += movementDistance;
+  }
+}
+
 export function createEnemies(scene, wallCollisions, playerCollisions = null, grounds = []) {
   prepararChavesSoltas(scene, enemyDefinitions.map((enemy) => enemy.keyColor));
 
@@ -202,8 +220,10 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null, gr
           nextPosition.z = enemy.group.position.z + enemy.direction * enemy.speed * delta;
         }
       }
+      const previousPosition = enemy.group.position.clone();
       enemy.group.position.copy(nextPosition);
       enemy.group.updateWorldMatrix(true, true);
+      pushPlayerWithEnemy(enemy, previousPosition, nextPosition, camera);
     }
   }
 

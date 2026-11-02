@@ -78,6 +78,7 @@ export function createEnemy(definition, onHit) {
     initialDirection: definition.direction,
     axis: definition.axis,
     limits: definition.limits,
+    collisionRadius: definition.type === "cylinder" ? 1.3 : 1,
     originPosition: new THREE.Vector3(...definition.position),
     keyColor: definition.keyColor,
     modelRotationY: definition.modelRotationY ?? Math.PI / 2,
