@@ -124,6 +124,7 @@ function createEnemy(definition, onHit) {
     limits: definition.limits,
     originPosition: new THREE.Vector3(...definition.position),
     keyColor: definition.keyColor,
+    modelRotationY: definition.modelRotationY ?? Math.PI / 2,
     flipOnTurn: definition.flipOnTurn === true,
     turnRotation: 0,
     model: null,
@@ -236,6 +237,10 @@ export function createEnemies(scene, wallCollisions, playerCollisions = null) {
     for (const enemy of enemies) {
       if (enteringNight && enemy.alive && !enemy.dying) {
         enemy.direction = enemy.initialDirection;
+        enemy.turnRotation = 0;
+        if (enemy.model) {
+          enemy.model.rotation.y = enemy.modelRotationY;
+        }
         enemy.group.position.copy(enemy.originPosition);
         enemy.group.visible = true;
         for (const mesh of enemy.fadeMeshes) {
