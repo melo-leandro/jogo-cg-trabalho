@@ -30,7 +30,7 @@ const sand = new THREE.Mesh(
     new THREE.BoxGeometry(136, 0.03, 6),
     sandMaterial
 );
-sand.position.set(172, -0.015, 0);
+sand.position.set(172, -0.005, 0);
 sand.userData.walkable = true;
 bridge.add(sand);
 
