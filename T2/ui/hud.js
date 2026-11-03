@@ -57,6 +57,7 @@ export function createHud() {
   controlsBox.add("Pular: Espaço");
   controlsBox.add("Disparar besta: Clique esquerdo/direito");
   controlsBox.add("Câmera orbital: C");
+  controlsBox.add("Câmera inicial: R");
   controlsBox.add("Modo construção: B");
   controlsBox.add("Dia/noite: H");
   controlsBox.add("Todas as chaves: K");
@@ -68,6 +69,7 @@ export function createHud() {
   orbitControlsBox.add("Arrastar: Botão direito do mouse");
   orbitControlsBox.add("Zoom: Roda do mouse");
   orbitControlsBox.add("Voltar: C");
+  orbitControlsBox.add("Câmera inicial: R");
 
   // infobox do modo de construção
   const buildModeBox = new InfoBox();

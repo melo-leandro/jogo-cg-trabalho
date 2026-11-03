@@ -12,6 +12,11 @@ const playerWidth = 0.6;
 const maximumStepHeight = 1.5;
 const maximumGroundDrop = 1.5;
 
+export function resetPlayerGroundState() {
+  playerGroundState.velocityY = 0;
+  playerGroundState.isGrounded = false;
+}
+
 export function jump() {
   if (!playerGroundState.isGrounded) return;
 

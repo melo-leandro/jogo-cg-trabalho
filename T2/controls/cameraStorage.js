@@ -1,5 +1,11 @@
 const cameraStorageKey = "t1-camera-state";
 
+export function resetCamera(camera, initialCamera) {
+  camera.position.copy(initialCamera.position);
+  camera.quaternion.copy(initialCamera.quaternion);
+  saveCamera(camera);
+}
+
 export function restoreCamera(camera) {
   try {
     const savedCamera = JSON.parse(localStorage.getItem(cameraStorageKey));

@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { restoreCamera, saveCamera } from "./controls/cameraStorage.js";
+import { resetCamera, restoreCamera, saveCamera } from "./controls/cameraStorage.js";
 import { isBuildCameraEnabled, toggleBuildCamera } from "./controls/buildCamera.js";
 import { createPlayerControls } from "./controls/playerControls.js";
 import { isInOrbitMode, toggleOrbit, updateOrbit } from "./controls/orbitCamera.js";
 import { criarArma } from "./models/gun.js";
 import { backCastleDoors } from "./models/castle.js";
-import { groundCollision, jump, wallCollision } from "./mechanics/collision.js";
+import { groundCollision, jump, resetPlayerGroundState, wallCollision } from "./mechanics/collision.js";
 import { atirar, atualizarBesta, atualizarProjeteis } from "./mechanics/shooting.js";
 import { renderWithWeapon } from "./world/renderWithWeapon.js";
 import { createHud } from "./ui/hud.js";
@@ -46,7 +46,19 @@ arma.visible = !buildModeEnabled;
 hud.setCrosshairVisible(!buildModeEnabled);
 
 window.addEventListener("keydown", (event) => {
-  if (hasWon && event.code === "KeyR") window.location.reload();
+  if (event.code === "KeyR" && !event.repeat) {
+    if (hasWon) {
+      window.location.reload();
+      return;
+    }
+    if (isInOrbitMode()) toggleOrbit(camera, renderer, controls);
+    resetCamera(camera, initialCamera);
+    resetPlayerGroundState();
+    arma.visible = !isBuildCameraEnabled();
+    hud.setCrosshairVisible(arma.visible);
+    hud.showCameraMode(false);
+    hud.showMessage("Câmera de volta ao início.");
+  }
   if (!hasWon && event.code === "KeyH" && !event.repeat) {
     enemySystem.setNight(toggleDayNight());
   }
