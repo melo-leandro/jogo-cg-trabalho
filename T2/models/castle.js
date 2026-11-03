@@ -124,8 +124,42 @@ function cylinderTower(x, z, slits) {
         new THREE.CylinderGeometry(4.5, 4.5, 18),
         new THREE.CylinderGeometry(3.5, 3.5, 16)
     );
+    const frameShell = createTowerShell(
+        new THREE.CylinderGeometry(4.58, 4.58, 18),
+        new THREE.CylinderGeometry(3.42, 3.42, 16)
+    );
+    const passageFrames = [];
+    horizontalPassage.updateMatrix();
+    verticalPassage.updateMatrix();
+    for (const passage of [horizontalPassage, verticalPassage]) {
+        const frameCutter = passage.clone();
+        frameCutter.scale.set(1.3, 1.12, 1);
+        frameCutter.updateMatrix();
+        // A interseção acompanha a curvatura da torre por dentro e por fora.
+        let frameSolid = frameShell.intersect(CSG.fromMesh(frameCutter))
+            .subtract(CSG.fromMesh(horizontalPassage))
+            .subtract(CSG.fromMesh(verticalPassage));
+        for (const previousFrame of passageFrames) {
+            frameSolid = frameSolid.subtract(CSG.fromGeometry(previousFrame.geometry));
+        }
+        const frame = CSG.toMesh(frameSolid, new THREE.Matrix4(), slitBorderMaterial);
+        frame.name = 'towerPassageFrame';
+        frame.userData.ignoreCollision = true;
+        frame.userData.projectileCollider = true;
+        passageFrames.push(frame);
+    }
     const solid = cutTowerPassages(shell, [horizontalPassage, verticalPassage]);
     const tower = addArrowSlits(solid, positions);
+    let framedSolid = CSG.fromGeometry(tower.geometry);
+    for (const frame of passageFrames) {
+        framedSolid = framedSolid.subtract(CSG.fromGeometry(frame.geometry));
+    }
+    tower.geometry.dispose();
+    tower.geometry = CSG.toMesh(framedSolid, new THREE.Matrix4(), material).geometry;
+    tower.add(...passageFrames);
+    const interiorLight = new THREE.PointLight("#ffcf91", 30, 18, 2);
+    interiorLight.position.set(0, height - 9 + 2, 0);
+    tower.add(interiorLight);
     tower.position.set(x, 9, z);
     castelo.add(tower);
     floor(x, height - 0.25 + ZF, z, null, null, null, 0, castelo, material, towerFloorGeometry);

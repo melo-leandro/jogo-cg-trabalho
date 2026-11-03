@@ -25,7 +25,8 @@ export function createWallCollision(objects, forPlayer = false) {
   for (const object of objects) {
     object.updateWorldMatrix(true, true);
     object.traverse((child) => {
-      if (!child.isMesh || child.userData.ignoreCollision) return;
+      if (!child.isMesh) return;
+      if (child.userData.ignoreCollision && (forPlayer || !child.userData.projectileCollider)) return;
 
       const collider = forPlayer ? child.children.find(part => part.userData.playerCollider) : null;
       meshes.push(collider ?? child);

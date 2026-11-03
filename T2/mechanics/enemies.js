@@ -65,6 +65,9 @@ function reverseEnemyDirection(enemy) {
 }
 
 function pushPlayerWithEnemy(enemy, previousPosition, nextPosition, camera) {
+  const playerFeet = camera.position.y - 4;
+  if (camera.position.y <= previousPosition.y - 2 || playerFeet >= previousPosition.y + 2) return;
+
   const axis = enemy.axis;
   const lateralAxis = axis === "x" ? "z" : "x";
   const movementDistance = nextPosition[axis] - previousPosition[axis];
